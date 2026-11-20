@@ -12,7 +12,8 @@ Connection. The event of connecting to a command station is represented only as 
 
 ## Requirements
 
-- JDK 17 (the build uses a Java 17 toolchain)
+- JDK 21 (latest 21.0.x patch; used to run Gradle and as the Kotlin/Java compile toolchain)
+- Android source and Kotlin target remain at Java 17 for runtime compatibility
 - Android SDK Platform 36 and Build-Tools 36.0.0
 - Android Studio with the matching SDK, or the Android command-line tools
 
@@ -35,7 +36,7 @@ The Gradle wrapper downloads Gradle 9.6.1 automatically.
    ```
 
 The build defaults to the Java toolchain configured by Gradle. If multiple JDKs are installed,
-run Gradle with `JAVA_HOME` pointing at a JDK 17 installation.
+run Gradle with `JAVA_HOME` pointing at a JDK 21 installation.
 
 ## Run
 
@@ -102,6 +103,8 @@ do not depend on `:core:protocol`; the protocol boundary stays below the UI laye
 
 - **AGP 9 built-in Kotlin.** Android modules use AGP 9.5's built-in Kotlin support. `:core:model`
   and `:core:protocol` remain pure Kotlin/JVM modules.
+- **JDK 21 toolchain, Java 17 target.** Gradle and the compiler toolchain run on JDK 21, while
+  Android `sourceCompatibility`/`targetCompatibility` and Kotlin `jvmTarget` stay at 17.
 - **Single Activity + Compose.** `MainActivity` enables edge-to-edge drawing and hosts the Compose
   tree.
 - **Adaptive navigation.** Material 3's adaptive navigation suite selects the appropriate compact or

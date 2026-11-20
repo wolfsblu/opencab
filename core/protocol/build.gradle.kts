@@ -5,8 +5,13 @@ plugins {
     id("com.android.lint")
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
     }
