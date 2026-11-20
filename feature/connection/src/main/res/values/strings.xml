@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="connection_title">Connection</string>
+    <string name="connection_disconnected">Disconnected</string>
+    <string name="connection_connecting">Connecting</string>
+    <string name="connection_connected">Connected to %1$s</string>
+    <string name="connection_status_body">OpenCab is not connected to a command station.</string>
+    <string name="connection_connect_unavailable">Connect (coming soon)</string>
+    <string name="connection_protocol_title">Protocol</string>
+    <string name="connection_protocol_status">Not implemented</string>
+    <string name="connection_protocol_body">Protocol framing, transport, and command encoding are intentionally not implemented yet.</string>
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme_system">Follow system</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_connection_title">Connection</string>
+    <string name="settings_connection_body">Manage the command station link.</string>
+    <string name="settings_open_connection">Open connection</string>
+    <string name="settings_about_title">About</string>
+    <string name="settings_about_body">OpenCab 0.1.0 — production scaffold. Networking, protocol, and throttle logic are not implemented yet.</string>
+</resources>

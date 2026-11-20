@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="roster_title">Roster</string>
+    <string name="roster_empty_title">No locomotives yet</string>
+    <string name="roster_empty_body">Saved locomotives and roster editing will arrive in a later milestone.</string>
+</resources>

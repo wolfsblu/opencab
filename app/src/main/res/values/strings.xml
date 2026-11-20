@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">OpenCab</string>
+    <string name="nav_drive">Drive</string>
+    <string name="nav_roster">Roster</string>
+    <string name="nav_settings">Settings</string>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="drive_title">Drive</string>
+    <string name="drive_speed_unit">km/h</string>
+    <string name="drive_status_disconnected">Not connected</string>
+    <string name="drive_status_connecting">Connecting</string>
+    <string name="drive_status_connected">Connected to %1$s</string>
+    <string name="drive_status_body">The protocol transport is not implemented yet.</string>
+    <string name="drive_connection_action">Connection</string>
+    <string name="drive_throttle_title">Throttle</string>
+    <string name="drive_throttle_placeholder">Throttle controls will appear here once the connection and protocol layers land.</string>
+</resources>
