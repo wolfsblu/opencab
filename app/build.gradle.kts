@@ -104,9 +104,11 @@ dependencies {
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
-    androidTestImplementation(libs.androidx.test.espresso.core) {
-        // Espresso 3.7.0 pulls error_prone_annotations:2.30.0, which is not resolvable
-        // in CI. The annotations are compile-time only and not needed at runtime.
-        exclude(group = "com.google.errorprone", module = "error_prone_annotations")
+    androidTestImplementation(libs.androidx.test.espresso.core)
+
+    constraints {
+        // Espresso 3.7.0 and Compose UI Test pull error_prone_annotations:2.30.0,
+        // which CI cannot resolve. Upgrade to a version that is available everywhere.
+        androidTestImplementation(libs.errorprone.annotations)
     }
 }
