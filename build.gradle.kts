@@ -64,7 +64,7 @@ subprojects {
         jvmTarget = "17"
     }
 
-    listOf("com.android.application", "com.android.library").forEach { pluginId ->
+    listOf("com.android.application", "com.android.library", "com.android.lint").forEach { pluginId ->
         plugins.withId(pluginId) {
             tasks.named("check").configure { dependsOn("lint") }
         }
