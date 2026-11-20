@@ -86,7 +86,7 @@ ADR-0001 refines this into `:protocol:withrottle`, `:core:session`, `:core:ui`,
 | 0 | Product and UX specification | **Done** | `docs/product-brief.md`, `docs/ux/ux-spec.md`, `docs/adr/0001-platform-and-stack.md` |
 | 1 | Project scaffold | **Done** | Multi-module Gradle build, CI, adaptive nav shell, theme selection |
 | 2 | Design system and app shell | **Done** | `CabTheme` + branded/high-contrast light/dark palettes, tabular type, shape/spacing/elevation/motion/haptic tokens, all eight shared components, adaptive suite (bottom bar compact / rail medium+expanded), predictive back, six-variant `@CabPreview` matrix, contrast + semantics tests, and `docs/design-system.md`. No screenshot harness is configured; the pinned-version gap is documented. |
-| 3 | WiThrottle protocol core | **Not started** | `:core:protocol` currently contains only a version descriptor |
+| 3 | WiThrottle protocol core | **Done** | `:core:protocol` contains the incremental line codec, typed commands/events, and pure `SessionReducer`; `docs/protocol.md` records exact mappings, version gates, the supported/unsupported matrix, and known protocol quirks. Golden, captured-transcript, chunk-boundary, round-trip, malformed-input, duplicate/unknown, and reducer-transition tests are in `core/protocol/src/test`. |
 | 4 | Transport, discovery, persistence | **Scaffold only** | Hilt modules, DataStore settings, Room `saved_loco` database; no transport or discovery |
 | 5 | Connection UX | **Scaffold only** | Placeholder Connection route with a disabled connect button |
 | 6 | Throttle state engine | **Not started** | — |
@@ -474,7 +474,7 @@ into the prompts, because the prompts are the planning record.
 | DI | Hilt | ADR-0001 excludes Hilt in favour of a manual `AppContainer`; the scaffold already uses Hilt | Pick one. Updating ADR-0001 to accept Hilt is cheaper than undoing the scaffold |
 | Persistence | Room for the roster | ADR-0001 excludes Room; the scaffold already has a Room database | Either accept Room for the roster or remove the scaffold before Prompt 8 |
 | Module names | `:feature:connection`, `:feature:throttle` | ADR-0001 proposes `:feature:connect`, `:feature:drive`, plus `:core:session`, `:core:ui`, `:protocol:withrottle` | Adopt ADR names now or amend the ADR; do not grow both |
-| Protocol split | Codec in `:core:protocol`, transport in `:core:data` | ADR-0001 puts ports in `:core:protocol` and the WiThrottle adapter in `:protocol:withrottle`; session state in `:core:session` | Follow ADR-0001 for Prompt 3/4, or revise it before implementation |
+| Protocol split | Codec in `:core:protocol`, transport in `:core:data` | ADR-0001 puts ports in `:core:protocol` and the WiThrottle adapter in `:protocol:withrottle`; session state in `:core:session` | Resolved for Step 3: the codec and pure reducer live in `:core:protocol` per the explicit prompt, and the ADR-0001 addendum records the deferred adapter/session split. Revisit when a second protocol is funded. |
 | Loco count | Prompt 9 adds multi-throttle | Product brief v1 allows one active loco; multi-throttle is v1.1 | Keep Prompt 9 out of v1 |
 
 The scaffold commit (`2eb3a82`) and ADR-0001 currently disagree. Settle that in one commit

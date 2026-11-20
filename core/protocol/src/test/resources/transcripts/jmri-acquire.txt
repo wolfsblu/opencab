@@ -1,0 +1,17 @@
+VN2.0
+HTJMRI
+HtJMRI 5.10.0 OpenCab Test Layout
+RL2]\[RGS 41}|{41}|{L]\[Test Loco}|{1234}|{L
+PPA1
+RCC0
+PW12080
+*10
+M0+L41<;>
+M0LL41<;>]\[Headlight]\[Bell]\[Whistle]\[
+M0AL41<;>F00
+M0AL41<;>F01
+M0AL41<;>F02
+M0AL41<;>V0
+M0AL41<;>R1
+M0AL41<;>s1
+M0AL41<;>V23

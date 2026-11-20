@@ -2,8 +2,8 @@
 
 OpenCab is a production-grade Android scaffold for a model-railroad cab controller. This
 milestone establishes the build, module boundaries, theme, dependency injection, persistence
-foundations, and an adaptive navigation shell. Networking, protocol framing, and throttle
-semantics are intentionally not implemented yet.
+foundations, an adaptive navigation shell, and a pure-Kotlin WiThrottle protocol core. Networking,
+discovery, and throttle UI are intentionally not implemented yet.
 
 ## Status
 
@@ -11,6 +11,12 @@ The app builds, launches, and shows the OpenCab design system on every placehold
 branded Material 3 theme with opt-in dynamic colour, tabular numeric readouts, shared
 status/control components, and an adaptive navigation shell. The event of connecting to a
 command station is represented only as scaffolded state.
+
+`:core:protocol` now contains the WiThrottle line codec, typed commands and events, and a pure
+session reducer. It has no Android, socket, thread, clock, or coroutine dependency and is covered
+by plain JVM golden, transcript, chunk-boundary, round-trip, malformed-input, and state-machine
+tests. The protocol reference and supported/unsupported matrix are in
+[`docs/protocol.md`](docs/protocol.md).
 
 The design system reference — tokens, components, semantics, preview matrix, and the gaps in the
 pinned Material 3 version — lives in [`docs/design-system.md`](docs/design-system.md).
@@ -92,6 +98,12 @@ Run the design-system unit tests (WCAG contrast and motion tokens):
 ./gradlew :core:designsystem:testDebugUnitTest
 ```
 
+Run the protocol codec and reducer tests:
+
+```bash
+./gradlew :core:protocol:test
+```
+
 Every shared component and feature screen carries a `@CabPreview` matrix: light/dark, 100 %/200 %
 font, phone portrait, phone landscape, and tablet. There is no screenshot-test harness configured,
 so previews are the visual review surface; the reasoning is recorded in
@@ -110,7 +122,7 @@ Apply formatting fixes locally:
 | `:app` | Application entry point, Hilt application, single Activity, navigation graph, and app theme selection. |
 | `:core:designsystem` | `CabTheme` and design tokens (colour, tabular type, shape, spacing, elevation, motion, haptics), shared components, adaptive navigation shell, predictive-back container, and the preview matrix. |
 | `:core:model` | Plain Kotlin domain types such as connection state and roster entries. |
-| `:core:protocol` | Protocol module boundary and descriptor. No transport or command logic yet. |
+| `:core:protocol` | Pure JVM WiThrottle wire codec, typed commands/events, and the deterministic session reducer. No transport or Android imports. |
 | `:core:data` | Hilt modules, DataStore-backed settings, and the Room roster database scaffold. |
 | `:feature:connection` | Placeholder Connection route and protocol status. |
 | `:feature:throttle` | Drive screen composed from `SpeedDisplay`, `StatusPill`, `SectionCard`, and `PrimaryActionButton`; no throttle logic yet. |
@@ -146,6 +158,11 @@ layer.
   modal sheets provide their own predictive-back behaviour.
 - **Dependency injection.** Hilt is used across `:app`, `:core:data`, and `:feature:settings`.
   `:core:data` provides the settings repository, Room database, and DAO.
+- **Protocol core.** `:core:protocol` owns the newline-framed WiThrottle codec, typed commands and
+  events, and the pure `SessionReducer`. The reducer owns handshake, heartbeat scheduling policy,
+  track-power state, and per-loco acquisition state; all time is supplied by the caller. Unknown
+  or malformed input becomes a logged `Unknown` event and never terminates a session. Exact wire
+  mappings, version gates, and the supported/unsupported matrix are in [`docs/protocol.md`](docs/protocol.md).
 - **Persistence.** DataStore stores the selected app theme. Room contains a single scaffolded
   `saved_loco` table and DAO for the future roster, with schema export enabled.
 - **Quality gates.** `./gradlew check` runs unit tests, lint, detekt, and Spotless. The GitHub
@@ -154,8 +171,8 @@ layer.
 ## Intentionally not implemented
 
 - DCC, LocoNet, XpressNet, or any other command-station transport
-- Protocol framing, discovery, command encoding, and connection lifecycle
-- Throttle acquisition, speed steps, functions, and emergency stop
+- Sockets, server discovery, connection lifecycle, reconnect, and heartbeat timers
+- Throttle UI state, speed coalescing, and gesture handling
 - Roster CRUD beyond the empty database scaffold
 
 ## Continuous integration

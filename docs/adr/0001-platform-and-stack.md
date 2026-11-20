@@ -254,3 +254,20 @@ The decision is only real if these exist by the end of Step 1:
   and WCAG contrast unit tests are the acceptance surface. No screenshot-test harness is configured
   in this project; AGP 9's screenshot-test plumbing requires the external preview-renderer plugin,
   which is not wired in.
+
+## Addendum: protocol implementation placement (Step 3)
+
+- **Decision.** Step 3 implements the WiThrottle line codec, typed messages, and the pure session
+  reducer in `:core:protocol`, following the build-plan module map and the explicit Step 3
+  instruction. The reducer is deterministic and takes caller-supplied timestamps; it contains no
+  sockets, threads, clocks, or coroutines with real time.
+- **Divergence from §2.3.** The ADR proposed `:protocol:withrottle` for the wire adapter and
+  `:core:session` for the reducer. Those modules were not created. With one protocol and one
+  session core, the extra Gradle modules would add ceremony without a second implementation.
+- **Revisit when.** A second command-station protocol (Z21, LocoNet, or similar) is funded, or a
+  second session consumer needs to share the reducer. At that point the codec can move to a
+  `:protocol:withrottle` adapter and the reducer to `:core:session`; the public types in
+  `:core:protocol` are already transport-free.
+- **Verification.** `docs/protocol.md` records the exact wire mappings and the supported/unsupported
+  matrix. Plain JVM tests cover golden messages, captured transcripts, every-byte chunk splits,
+  round trips, malformed input, duplicates/unknowns, and reducer transitions.

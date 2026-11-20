@@ -1,13 +1,13 @@
 package dev.opencab.core.protocol
 
 /**
- * Describes the cab-bus protocol that OpenCab will speak.
+ * Stable descriptor for the WiThrottle protocol subset implemented by this module.
  *
- * Framing, transport, and command semantics are intentionally absent from this milestone.
- * Keeping the descriptor here gives later protocol work a stable module boundary.
+ * The wire codec, typed messages, and pure session reducer live alongside this descriptor. No
+ * transport, socket, thread, or Android type is part of this module.
  */
 object OpenCabProtocol {
     const val ID: String = "opencab"
 
-    const val VERSION: Int = 0
+    const val VERSION: Int = 1
 }
