@@ -10,6 +10,11 @@ semantics are intentionally not implemented yet.
 The app builds, launches, and shows themed placeholder content for Drive, Roster, Settings, and
 Connection. The event of connecting to a command station is represented only as scaffolded state.
 
+## Planning
+
+The step-by-step build plan, prompt sequence, and implementation status live in
+[`docs/build-plan.md`](docs/build-plan.md). Start there before beginning a new milestone.
+
 ## Requirements
 
 - JDK 21 (latest 21.0.x patch; used to run Gradle and as the Kotlin/Java compile toolchain)
