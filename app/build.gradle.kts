@@ -107,8 +107,9 @@ dependencies {
     androidTestImplementation(libs.androidx.test.espresso.core)
 
     constraints {
-        // Espresso 3.7.0 and Compose UI Test pull error_prone_annotations:2.30.0,
-        // which CI cannot resolve. Upgrade to a version that is available everywhere.
+        // Workaround: Espresso 3.7.0 and Compose UI Test pull
+        // error_prone_annotations:2.30.0, which CI cannot resolve. This constraint
+        // should be removable once those dependencies stop requesting 2.30.0.
         androidTestImplementation(libs.errorprone.annotations)
     }
 }
