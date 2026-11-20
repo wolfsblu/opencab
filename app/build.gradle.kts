@@ -1,8 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
@@ -56,14 +53,13 @@ android {
         // Adaptive icons require API 26, so the mipmap-anydpi-v26 qualifier is intentional
         // even though minSdk is also 26. AAPT needs the qualifier to link the resource.
         disable += "ObsoleteSdkInt"
+        // targetSdk 36 is a project requirement; API 37 is available but out of scope.
+        disable += "OldTargetApi"
     }
 }
 
 kotlin {
     jvmToolchain(17)
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
-    }
 }
 
 dependencies {

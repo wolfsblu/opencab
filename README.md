@@ -16,7 +16,7 @@ Connection. The event of connecting to a command station is represented only as 
 - Android SDK Platform 36 and Build-Tools 36.0.0
 - Android Studio with the matching SDK, or the Android command-line tools
 
-The Gradle wrapper downloads Gradle 8.14.3 automatically.
+The Gradle wrapper downloads Gradle 9.6.1 automatically.
 
 ## Setup
 
@@ -100,6 +100,8 @@ do not depend on `:core:protocol`; the protocol boundary stays below the UI laye
 
 ## Architecture notes
 
+- **AGP 9 built-in Kotlin.** Android modules use AGP 9.5's built-in Kotlin support. `:core:model`
+  and `:core:protocol` remain pure Kotlin/JVM modules.
 - **Single Activity + Compose.** `MainActivity` enables edge-to-edge drawing and hosts the Compose
   tree.
 - **Adaptive navigation.** Material 3's adaptive navigation suite selects the appropriate compact or
