@@ -1,4 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="opencab_back">Back</string>
+    <string name="cab_back">Back</string>
+
+    <string name="cab_status_connected">Connected</string>
+    <string name="cab_status_reconnecting">Reconnecting</string>
+    <string name="cab_status_reconnecting_attempt">Reconnecting, attempt %1$d</string>
+    <string name="cab_status_offline">Offline</string>
+
+    <string name="cab_direction_forward">Forward</string>
+    <string name="cab_direction_reverse">Reverse</string>
+
+    <string name="cab_speed_percent">%1$d percent</string>
+    <string name="cab_speed_unit">%</string>
+    <string name="cab_speed_last_known">Last known %1$d percent</string>
+    <string name="cab_speed_unknown">Speed unknown</string>
+    <string name="cab_speed_readout">%1$d percent, %2$s</string>
+    <string name="cab_speed_readout_stale">Last known %1$d percent, %2$s</string>
+    <string name="cab_speed_readout_no_direction">%1$d percent</string>
+
+    <string name="cab_function_on">On</string>
+    <string name="cab_function_off">Off</string>
+    <string name="cab_function_momentary">Momentary</string>
+    <string name="cab_function_disabled">Unavailable</string>
+
+    <string name="cab_retry">Try again</string>
+    <string name="cab_cancel">Cancel</string>
+    <string name="cab_loading">Loading</string>
+    <string name="cab_section_more">More</string>
 </resources>

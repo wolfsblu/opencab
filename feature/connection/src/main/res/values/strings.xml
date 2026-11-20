@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="connection_title">Connection</string>
-    <string name="connection_disconnected">Disconnected</string>
-    <string name="connection_connecting">Connecting</string>
-    <string name="connection_connected">Connected to %1$s</string>
+    <string name="connection_subtitle">Command station link</string>
+    <string name="connection_status_title">Link</string>
     <string name="connection_status_body">OpenCab is not connected to a command station.</string>
-    <string name="connection_connect_unavailable">Connect (coming soon)</string>
     <string name="connection_protocol_title">Protocol</string>
     <string name="connection_protocol_status">Not implemented</string>
-    <string name="connection_protocol_body">Protocol framing, transport, and command encoding are intentionally not implemented yet.</string>
+    <string name="connection_protocol_body">Protocol framing, transport, discovery, and command encoding arrive in a later milestone.</string>
+    <string name="connection_unavailable_title">Connection isn\'t available yet</string>
+    <string name="connection_unavailable_body">The transport layer is intentionally absent from this scaffold, so there is nothing to connect to.</string>
+    <string name="connection_connect_unavailable">Connect (coming soon)</string>
 </resources>

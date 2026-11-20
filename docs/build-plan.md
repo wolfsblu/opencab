@@ -85,13 +85,13 @@ ADR-0001 refines this into `:protocol:withrottle`, `:core:session`, `:core:ui`,
 |---|------|--------|------------------------|
 | 0 | Product and UX specification | **Done** | `docs/product-brief.md`, `docs/ux/ux-spec.md`, `docs/adr/0001-platform-and-stack.md` |
 | 1 | Project scaffold | **Done** | Multi-module Gradle build, CI, adaptive nav shell, theme selection |
-| 2 | Design system and app shell | **In progress** | Theme, color, type, `OpenCabScaffold`, `EmptyState`, adaptive navigation; expressive components, motion tokens, and the preview/screenshot matrix are still missing |
+| 2 | Design system and app shell | **Done** | `CabTheme` + branded/high-contrast light/dark palettes, tabular type, shape/spacing/elevation/motion/haptic tokens, all eight shared components, adaptive suite (bottom bar compact / rail medium+expanded), predictive back, six-variant `@CabPreview` matrix, contrast + semantics tests, and `docs/design-system.md`. No screenshot harness is configured; the pinned-version gap is documented. |
 | 3 | WiThrottle protocol core | **Not started** | `:core:protocol` currently contains only a version descriptor |
 | 4 | Transport, discovery, persistence | **Scaffold only** | Hilt modules, DataStore settings, Room `saved_loco` database; no transport or discovery |
 | 5 | Connection UX | **Scaffold only** | Placeholder Connection route with a disabled connect button |
 | 6 | Throttle state engine | **Not started** | — |
-| 7 | Throttle UI | **Scaffold only** | Placeholder Drive screen with a static speed and connection card |
-| 8 | Roster and acquisition | **Scaffold only** | Room entity/DAO and an empty roster screen |
+| 7 | Throttle UI | **Scaffold only** | Drive screen styled with `SpeedDisplay`, `StatusPill`, `SectionCard`, and `PrimaryActionButton`; no throttle state or gestures |
+| 8 | Roster and acquisition | **Scaffold only** | Room entity/DAO and a roster empty state styled with the design system |
 | 9 | Multi-throttle and linked consists | **Not started** | Planned as v1.1 by the product brief |
 | 10 | Settings, diagnostics, polish | **Not started** | Theme setting exists; the rest is open |
 | 11 | Hardening and release | **Not started** | — |

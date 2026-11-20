@@ -13,7 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import dev.opencab.core.data.settings.AppTheme
 import dev.opencab.core.data.settings.SettingsRepository
-import dev.opencab.core.designsystem.theme.OpenCabTheme
+import dev.opencab.core.designsystem.theme.CabTheme
 import dev.opencab.ui.OpenCabApp
 import javax.inject.Inject
 
@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            OpenCabTheme(darkTheme = darkTheme) {
+            CabTheme(darkTheme = darkTheme) {
                 OpenCabApp()
             }
         }

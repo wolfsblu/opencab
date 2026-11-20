@@ -233,3 +233,24 @@ The decision is only real if these exist by the end of Step 1:
 - Decide whether `:core:session` and `:core:data` merge (they are small); keep separate until the reducer earns its own module.
 - Decide the `*+` heartbeat default with two club operators (product brief open question 1).
 - Confirm Android 16 local-network permission behaviour on real hardware before committing to the Connect-gate copy.
+
+---
+
+## Addendum: design system implementation (Step 2)
+
+- **Material3 version.** The pinned Compose BOM (`2026.06.01`) resolves `androidx.compose.material3`
+  **1.4.0**, not the 1.5.x line assumed above.
+- **Expressive theme and motion are internal in 1.4.0.** `MaterialExpressiveTheme`, `MotionScheme`,
+  `MotionScheme.expressive()`, `MotionScheme.standard()`, and `MaterialTheme.motionScheme` are
+  declared `internal`. They cannot be called from `:core:designsystem`.
+- **Consequence.** `CabTheme` is built on the public `MaterialTheme(colorScheme, typography,
+  shapes)` overload. `CabMotion` mirrors Material's generated expressive and standard spring token
+  values and is exposed through `LocalCabMotion` / `CabTheme.motion`. Component call sites do not
+  depend on the missing API, so they can switch to the public motion scheme when it lands.
+- **What is available.** Expressive navigation components (`ShortNavigationBar`,
+  `WideNavigationRail`, the `NavigationSuiteType` layout values), `TextAutoSize`, and the
+  `Confirm` / `Reject` / `SegmentTick` haptic types are public and are used.
+- **Verification.** The six-variant `@CabPreview` matrix, Compose semantics instrumentation tests,
+  and WCAG contrast unit tests are the acceptance surface. No screenshot-test harness is configured
+  in this project; AGP 9's screenshot-test plumbing requires the external preview-renderer plugin,
+  which is not wired in.

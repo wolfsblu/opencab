@@ -1,19 +1,19 @@
 package dev.opencab.feature.settings
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -24,13 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.opencab.core.data.settings.AppTheme
-import dev.opencab.core.designsystem.component.OpenCabScaffold
-import dev.opencab.core.designsystem.theme.OpenCabTheme
+import dev.opencab.core.designsystem.component.CabScaffold
+import dev.opencab.core.designsystem.component.SectionCard
+import dev.opencab.core.designsystem.preview.CabPreview
+import dev.opencab.core.designsystem.theme.CabTheme
 
 const val SETTINGS_ROUTE: String = "settings"
 
@@ -57,27 +57,34 @@ internal fun SettingsScreen(
     onOpenConnection: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OpenCabScaffold(
+    CabScaffold(
         title = stringResource(R.string.settings_title),
+        subtitle = stringResource(R.string.settings_subtitle),
         modifier = modifier.testTag("screen_settings"),
     ) { contentPadding ->
-        val contentModifier =
+        Box(
+            modifier =
             Modifier
                 .padding(contentPadding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 16.dp)
-
-        Column(
-            modifier = contentModifier,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .fillMaxSize(),
+            contentAlignment = Alignment.TopCenter,
         ) {
-            AppearanceCard(
-                selectedTheme = uiState.theme,
-                onThemeSelected = onThemeSelected,
-            )
-            ConnectionCard(onOpenConnection = onOpenConnection)
-            AboutCard()
+            Column(
+                modifier =
+                Modifier
+                    .widthIn(max = CabTheme.sizing.contentMaxWidth)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = CabTheme.spacing.page, vertical = CabTheme.spacing.md),
+                verticalArrangement = Arrangement.spacedBy(CabTheme.spacing.md),
+            ) {
+                AppearanceCard(
+                    selectedTheme = uiState.theme,
+                    onThemeSelected = onThemeSelected,
+                )
+                ConnectionCard(onOpenConnection = onOpenConnection)
+                AboutCard()
+            }
         }
     }
 }
@@ -87,29 +94,25 @@ private fun AppearanceCard(
     selectedTheme: AppTheme,
     onThemeSelected: (AppTheme) -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = stringResource(R.string.settings_appearance),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Spacer(Modifier.height(8.dp))
-            ThemeOption(
-                label = stringResource(R.string.settings_theme_system),
-                selected = selectedTheme == AppTheme.SYSTEM,
-                onClick = { onThemeSelected(AppTheme.SYSTEM) },
-            )
-            ThemeOption(
-                label = stringResource(R.string.settings_theme_light),
-                selected = selectedTheme == AppTheme.LIGHT,
-                onClick = { onThemeSelected(AppTheme.LIGHT) },
-            )
-            ThemeOption(
-                label = stringResource(R.string.settings_theme_dark),
-                selected = selectedTheme == AppTheme.DARK,
-                onClick = { onThemeSelected(AppTheme.DARK) },
-            )
-        }
+    SectionCard(
+        title = stringResource(R.string.settings_appearance),
+        subtitle = stringResource(R.string.settings_appearance_body),
+    ) {
+        ThemeOption(
+            label = stringResource(R.string.settings_theme_system),
+            selected = selectedTheme == AppTheme.SYSTEM,
+            onClick = { onThemeSelected(AppTheme.SYSTEM) },
+        )
+        ThemeOption(
+            label = stringResource(R.string.settings_theme_light),
+            selected = selectedTheme == AppTheme.LIGHT,
+            onClick = { onThemeSelected(AppTheme.LIGHT) },
+        )
+        ThemeOption(
+            label = stringResource(R.string.settings_theme_dark),
+            selected = selectedTheme == AppTheme.DARK,
+            onClick = { onThemeSelected(AppTheme.DARK) },
+        )
     }
 }
 
@@ -123,75 +126,59 @@ private fun ThemeOption(
         modifier =
         Modifier
             .fillMaxWidth()
+            .heightIn(min = CabTheme.sizing.touchMin)
             .selectable(
                 selected = selected,
                 onClick = onClick,
                 role = Role.RadioButton,
-            ).padding(vertical = 8.dp),
+            ).padding(vertical = CabTheme.spacing.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         RadioButton(
             selected = selected,
             onClick = null,
         )
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(CabTheme.spacing.sm))
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyLarge,
+            style = CabTheme.typography.readout,
+            color = CabTheme.colorScheme.onSurface,
         )
     }
 }
 
 @Composable
 private fun ConnectionCard(onOpenConnection: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+    SectionCard(title = stringResource(R.string.settings_connection_title)) {
+        Text(
+            text = stringResource(R.string.settings_connection_body),
+            style = CabTheme.typography.readout,
+            color = CabTheme.colorScheme.onSurfaceVariant,
+        )
+        TextButton(
+            onClick = onOpenConnection,
+            modifier = Modifier.testTag("settings_open_connection"),
         ) {
-            Text(
-                text = stringResource(R.string.settings_connection_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Text(
-                text = stringResource(R.string.settings_connection_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            TextButton(
-                onClick = onOpenConnection,
-                modifier = Modifier.padding(top = 4.dp),
-            ) {
-                Text(stringResource(R.string.settings_open_connection))
-            }
+            Text(stringResource(R.string.settings_open_connection))
         }
     }
 }
 
 @Composable
 private fun AboutCard() {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(
-                text = stringResource(R.string.settings_about_title),
-                style = MaterialTheme.typography.titleMedium,
-            )
-            Text(
-                text = stringResource(R.string.settings_about_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+    SectionCard(title = stringResource(R.string.settings_about_title)) {
+        Text(
+            text = stringResource(R.string.settings_about_body),
+            style = CabTheme.typography.readout,
+            color = CabTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFAFAFF)
+@CabPreview
 @Composable
-internal fun SettingsScreenPreview() {
-    OpenCabTheme(dynamicColor = false) {
+private fun SettingsScreenPreview() {
+    CabTheme {
         SettingsScreen(
             uiState = SettingsUiState(theme = AppTheme.SYSTEM),
             onThemeSelected = {},

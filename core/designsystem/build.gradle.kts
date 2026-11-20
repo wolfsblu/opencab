@@ -11,6 +11,7 @@ android {
 
     defaultConfig {
         minSdk = 26
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
@@ -43,5 +44,19 @@ dependencies {
     api(libs.compose.material.icons.core)
     implementation(libs.compose.ui.tooling.preview)
 
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.compose.material3.adaptive)
+    implementation(libs.compose.material3.adaptive.navigation.suite)
+    implementation(libs.androidx.window.core)
+
     debugImplementation(libs.compose.ui.tooling)
+    debugImplementation(libs.compose.ui.test.manifest)
+
+    testImplementation(libs.junit)
+
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.espresso.core)
 }

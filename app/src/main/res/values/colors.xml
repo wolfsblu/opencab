@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="opencab_window_background">#FAFAFF</color>
-    <color name="ic_launcher_background">#0B5C8A</color>
+    <color name="opencab_window_background">#F8F9FB</color>
+    <color name="ic_launcher_background">#005A78</color>
 </resources>

@@ -36,3 +36,6 @@ style:
     max: 4
   UnusedPrivateMember:
     active: true
+    ignoreAnnotated:
+      - Preview
+      - CabPreview

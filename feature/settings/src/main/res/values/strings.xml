@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="settings_title">Settings</string>
+    <string name="settings_subtitle">Appearance and link</string>
     <string name="settings_appearance">Appearance</string>
+    <string name="settings_appearance_body">Choose how OpenCab looks on this device.</string>
     <string name="settings_theme_system">Follow system</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>

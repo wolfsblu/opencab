@@ -2,7 +2,7 @@
 
 **Status:** Draft v1 (Step 0 deliverable) · **Date:** 2026-11-20
 **Depends on:** [`../product-brief.md`](../product-brief.md) · **Architecture:** [`../adr/0001-platform-and-stack.md`](../adr/0001-platform-and-stack.md)
-**Design system:** Material 3 Expressive (`androidx.compose.material3` 1.5.x, `MaterialExpressiveTheme`)
+**Design system:** Material 3 Expressive. Compose BOM `2026.06.01` resolves `androidx.compose.material3` **1.4.0**; see [`../design-system.md`](../design-system.md) for the implemented tokens and the pinned-version gaps.
 
 ---
 

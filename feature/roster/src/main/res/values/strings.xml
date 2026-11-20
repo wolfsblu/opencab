@@ -2,5 +2,7 @@
 <resources>
     <string name="roster_title">Roster</string>
     <string name="roster_empty_title">No locomotives yet</string>
-    <string name="roster_empty_body">Saved locomotives and roster editing will arrive in a later milestone.</string>
+    <string name="roster_empty_body">Saved locomotives and the layout roster will appear here once a command station is connected.</string>
+    <string name="roster_upcoming_title">Coming with the protocol layer</string>
+    <string name="roster_upcoming_body">Search, recents, favourites, and manual address entry are designed but not implemented in this milestone.</string>
 </resources>
