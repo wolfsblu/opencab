@@ -190,7 +190,7 @@ No acquisition failure is ever a full-screen error, a toast, or a silent no-op.
 │            drag ↕                    │  hint, fades after first use
 │                                      │
 │   ┌───────────┐   ┌───────────────┐  │
-│   │   STOP    │   │  ⇅  DIRECTION │  │  72 dp / 64 dp
+│   │   STOP    │   │  ⇅  DIRECTION │  │  56 dp / 64 dp
 │   └───────────┘   └───────────────┘  │
 │  ┌────────────────────────────────┐  │
 │  │  Drive    Roster    Settings   │  │  ShortNavigationBar, 80 dp
@@ -408,7 +408,7 @@ Beyond delta-drag:
 
 ### 7.3 Immediate stop
 
-- Stop is a 72 dp (phone) / 64 dp (landscape) filled button, bottom-right thumb zone, identical on every layout and every state.
+- Stop is a 56 dp filled button in the bottom thumb zone, identical on every layout and every state. It appears only while a locomotive is acquired; with no loco held there is nothing to stop.
 - Stop is **chrome, not content**: it is drawn above every sheet, overlay, and dialog. There is no state in which stopping costs more than one tap.
 - One tap: sends `V0` immediately. The number snaps to 0; the arc eases over 400 ms so the change is visible without implying a physical deceleration we cannot measure.
 - Stop works **during a drag**: pressing it cancels the drag, discards the pending value, and sends 0. This is the case that matters when the operator's thumb is already on the dial and something goes wrong.
@@ -552,7 +552,7 @@ Colour: Material You dynamic colour by default, with a hand-tuned fallback schem
 
 ### 10.1 Targets
 - **48 dp minimum**, 8 dp minimum spacing.
-- **72 dp** for Stop, **64 dp** for Direction and nav items, **56 dp** for function keys.
+- **56 dp** for Stop and other primary actions, **64 dp** for Direction and nav items, **56 dp** for function keys.
 - Hit areas are never extended into a neighbouring control; the dial's gesture region is bounded and does not overlap Stop.
 
 ### 10.2 TalkBack semantics
@@ -657,7 +657,7 @@ Glossary for reference (surface ↔ protocol):
 | Token | Value |
 |---|---|
 | `touch.min` | 48 dp |
-| `touch.primary` | 72 dp (Stop), 64 dp (Direction), 56 dp (functions) |
+| `touch.primary` | 56 dp (primary actions, including Stop), 64 dp (Direction), 56 dp (functions) |
 | `space.grid` | 4 dp base; 8 / 12 / 16 / 24 / 32 |
 | `radius.container` | M3 shape scale; no custom radii above 28 dp on Drive |
 | `arc.size` | 232 dp compact, 320 dp max |

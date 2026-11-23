@@ -7,7 +7,10 @@
 
     <string name="drive_locomotive_title">Locomotive</string>
     <string name="drive_locomotive_subtitle">Not acquired</string>
+    <string name="drive_locomotive_subtitle_acquired">Acquired</string>
     <string name="drive_locomotive_body_connected">Choose a locomotive from the roster to start driving.</string>
+    <string name="drive_locomotive_body_ready">Ready to drive.</string>
+    <string name="drive_choose_locomotive">Choose locomotive</string>
 
     <string name="drive_no_link_title">No layout connected</string>
     <string name="drive_no_link_body">Choose a layout to start driving.</string>

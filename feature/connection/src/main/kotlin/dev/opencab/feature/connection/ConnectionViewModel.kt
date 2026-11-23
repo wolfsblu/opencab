@@ -307,25 +307,26 @@ class ConnectionViewModel @Inject constructor(
                 permission = permission,
                 scanPhase = scanPhase,
                 discovered = discoveredServers.map { server ->
+                    val saved = savedServers.firstOrNull { it.endpoint == server.endpoint }
                     serverCard(
-                        id = "discovered:${server.endpoint.display}",
-                        name = server.name,
+                        id = saved?.id ?: "discovered:${server.endpoint.display}",
+                        name = saved?.name ?: server.name,
                         endpoint = server.endpoint,
-                        lastConnectedEpochMillis = savedServers
-                            .firstOrNull { it.endpoint == server.endpoint }
-                            ?.lastConnectedEpochMillis,
-                        source = ServerSource.Discovered,
+                        lastConnectedEpochMillis = saved?.lastConnectedEpochMillis,
+                        source = if (saved != null) ServerSource.Saved else ServerSource.Discovered,
                     )
                 },
-                saved = savedServers.map { server ->
-                    serverCard(
-                        id = server.id,
-                        name = server.name,
-                        endpoint = server.endpoint,
-                        lastConnectedEpochMillis = server.lastConnectedEpochMillis,
-                        source = ServerSource.Saved,
-                    )
-                },
+                saved = savedServers
+                    .filterNot { saved -> discoveredServers.any { it.endpoint == saved.endpoint } }
+                    .map { server ->
+                        serverCard(
+                            id = server.id,
+                            name = server.name,
+                            endpoint = server.endpoint,
+                            lastConnectedEpochMillis = server.lastConnectedEpochMillis,
+                            source = ServerSource.Saved,
+                        )
+                    },
                 link = link,
                 failure = failure,
                 manualEntry = manualEntry,

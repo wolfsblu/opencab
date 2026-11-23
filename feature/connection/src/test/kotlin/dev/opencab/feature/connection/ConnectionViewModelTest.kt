@@ -200,7 +200,7 @@ class ConnectionViewModelTest {
     }
 
     @Test
-    fun discoveredRowsReuseTheLastConnectedTimeFromItsSavedEndpoint() = runTest {
+    fun discoveredSavedEndpointsAreMergedIntoOneRow() = runTest {
         val lastConnected = 1_700_000_000_000
         val discovery = FakeServerDiscovery(
             DiscoverySnapshot(servers = listOf(discovered), finished = true),
@@ -220,8 +220,10 @@ class ConnectionViewModelTest {
         advanceUntilIdle()
 
         val card = viewModel.uiState.value.discovered.single()
+        assertEquals("saved-1", card.id)
         assertEquals(lastConnected, card.lastConnectedEpochMillis)
-        assertEquals(ServerSource.Discovered, card.source)
+        assertEquals(ServerSource.Saved, card.source)
+        assertTrue(viewModel.uiState.value.saved.isEmpty())
     }
 
     private fun viewModel(

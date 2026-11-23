@@ -72,6 +72,7 @@ fun OpenCabApp(
                     DriveRoute(
                         connectionState = connectionState,
                         onOpenConnection = { navController.navigate(CONNECTION_ROUTE) },
+                        onChooseLocomotive = { navController.navigateToTopLevel(ROSTER_ROUTE) },
                         onDisconnect = onDisconnect,
                     )
                 }

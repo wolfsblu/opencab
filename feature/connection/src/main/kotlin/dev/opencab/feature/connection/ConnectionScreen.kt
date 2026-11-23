@@ -478,21 +478,15 @@ private fun SavedSection(
     uiState: ConnectionUiState,
     onAction: (ConnectionAction) -> Unit,
 ) {
+    if (uiState.saved.isEmpty()) return
+
     Column(verticalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm)) {
         SectionHeading(title = stringResource(R.string.connection_saved_title))
-        if (uiState.saved.isEmpty()) {
-            Text(
-                text = stringResource(R.string.connection_saved_empty),
-                style = CabTheme.typography.readout,
-                color = CabTheme.colorScheme.onSurfaceVariant,
-            )
-        } else {
-            ServerList(
-                servers = uiState.saved,
-                onAction = onAction,
-                testTag = "connection_saved_list",
-            )
-        }
+        ServerList(
+            servers = uiState.saved,
+            onAction = onAction,
+            testTag = "connection_saved_list",
+        )
     }
 }
 

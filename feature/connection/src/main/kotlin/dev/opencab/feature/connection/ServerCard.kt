@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CircularProgressIndicator
@@ -106,14 +105,6 @@ internal fun ServerCard(
                     }
                 }
                 ServerStatusLabel(status = server.status)
-                if (canConnect) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                        contentDescription = null,
-                        modifier = Modifier.size(CabTheme.sizing.iconMedium),
-                        tint = CabTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
                 if (onEdit != null && onDelete != null) {
                     Box {
                         IconButton(
@@ -149,7 +140,14 @@ internal fun ServerCard(
             }
 
             when (server.status) {
-                ServerStatus.Available -> Unit
+                ServerStatus.Available ->
+                    SecondaryActionButton(
+                        text = stringResource(R.string.connection_server_connect),
+                        onClick = onConnect,
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .testTag("server_connect_${server.id}"),
+                    )
 
                 ServerStatus.Connecting ->
                     SecondaryActionButton(
@@ -223,8 +221,14 @@ private fun ServerStatusLabel(status: ServerStatus) {
 }
 
 @Composable
-private fun relativeTime(epochMillis: Long): String = DateUtils.getRelativeTimeSpanString(
-    epochMillis,
-    System.currentTimeMillis(),
-    DateUtils.MINUTE_IN_MILLIS,
-).toString()
+private fun relativeTime(epochMillis: Long): String {
+    val elapsed = System.currentTimeMillis() - epochMillis
+    if (elapsed in 0 until DateUtils.MINUTE_IN_MILLIS) {
+        return stringResource(R.string.connection_server_last_connected_now)
+    }
+    return DateUtils.getRelativeTimeSpanString(
+        epochMillis,
+        System.currentTimeMillis(),
+        DateUtils.MINUTE_IN_MILLIS,
+    ).toString()
+}

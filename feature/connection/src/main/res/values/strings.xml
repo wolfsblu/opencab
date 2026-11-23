@@ -23,7 +23,6 @@
     <string name="connection_permission_try_again">Try again</string>
 
     <string name="connection_saved_title">Saved layouts</string>
-    <string name="connection_saved_empty">Layouts you connect to are saved here.</string>
 
     <string name="connection_manual_open">Enter address manually</string>
     <string name="connection_manual_section_title">Manual entry</string>
@@ -56,11 +55,13 @@
 
     <string name="connection_server_connecting">Connecting…</string>
     <string name="connection_server_failed">Couldn\'t connect</string>
+    <string name="connection_server_connect">Connect</string>
     <string name="connection_server_drive">Drive</string>
     <string name="connection_server_more">More options</string>
     <string name="connection_server_edit">Edit</string>
     <string name="connection_server_forget">Forget</string>
     <string name="connection_server_last_connected">Last connected %1$s</string>
+    <string name="connection_server_last_connected_now">just now</string>
 
     <string name="connection_error_retry">Try again</string>
     <string name="connection_error_dismiss">Choose another layout</string>

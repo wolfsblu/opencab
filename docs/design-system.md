@@ -92,7 +92,7 @@ never animated; only the arc eases.
 | `sheet` | 28 dp top corners |
 | `touchMin` | 48 dp |
 | `touchSecondary` | 64 dp |
-| `touchPrimary` | 72 dp (Stop) |
+| `touchPrimary` | 72 dp (upper bound for touch targets) |
 | `functionKey` | 56 dp |
 | `speedArcCompact` / `speedArcMax` | 232 / 320 dp |
 | `contentMaxWidth` | 640 dp |

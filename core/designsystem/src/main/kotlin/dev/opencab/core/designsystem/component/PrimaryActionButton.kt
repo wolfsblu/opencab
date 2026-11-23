@@ -34,15 +34,13 @@ enum class PrimaryActionSize(
 ) {
     Regular(56.dp),
     Large(64.dp),
-    Hero(72.dp),
 }
 
 /**
- * The one primary action on a screen. Sizes map directly to the touch tokens; [Hero] is the
- * Stop target and is never made smaller by a layout.
+ * The one primary action on a screen.
  *
- * [Regular] is the default so every ordinary screen action shares the same 56 dp height.
- * [Large] is reserved for a single emphasised action, and [Hero] belongs to Stop alone.
+ * [Regular] is the default so every ordinary screen action shares the same 56 dp height, and
+ * Stop uses it too. [Large] is reserved for a single emphasised action.
  */
 @Composable
 fun PrimaryActionButton(
@@ -109,7 +107,6 @@ private fun PrimaryActionButtonPreview() {
         PrimaryActionButton(
             text = "Stop train",
             onClick = {},
-            size = PrimaryActionSize.Hero,
         )
     }
 }
