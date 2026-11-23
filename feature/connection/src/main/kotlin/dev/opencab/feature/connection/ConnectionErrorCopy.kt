@@ -82,6 +82,13 @@ internal fun connectionErrorCopy(
             action = ConnectionErrorAction.Retry,
         )
 
+    ConnectionError.ProtocolMismatch ->
+        ConnectionErrorCopy(
+            title = stringResource(R.string.connection_error_protocol_title),
+            message = stringResource(R.string.connection_error_protocol_body),
+            action = ConnectionErrorAction.Dismiss,
+        )
+
     ConnectionError.Unknown ->
         ConnectionErrorCopy(
             title = stringResource(R.string.connection_error_unknown_title),

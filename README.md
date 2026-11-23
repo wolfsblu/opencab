@@ -4,7 +4,7 @@ OpenCab is a production-grade Android scaffold for a model-railroad cab controll
 milestone establishes the build, module boundaries, theme, dependency injection, persistence
 foundations, an adaptive navigation shell, a pure-Kotlin WiThrottle protocol core, and the
 connection gate: mDNS discovery, saved layouts, manual entry, a live socket handshake, and a
-hardware-free demo session. Throttle state and throttle UI logic remain intentionally absent.
+scripted hardware-free demo server. Throttle state and throttle UI logic remain intentionally absent.
 
 ## Status
 
@@ -22,8 +22,9 @@ tests. The protocol reference and supported/unsupported matrix are in
 The design system reference — tokens, components, semantics, preview matrix, and the gaps in the
 pinned Material 3 version — lives in [`docs/design-system.md`](docs/design-system.md).
 
-The connection flow reference — discovery, permission handling, saved layouts, typed errors, demo
-transport, and state mapping — lives in [`docs/connection.md`](docs/connection.md).
+The connection flow reference — the `DccClient` transport, discovery, permission handling,
+saved layouts, typed errors, reconnect policy, scripted demo server, and state mapping — lives in
+[`docs/connection.md`](docs/connection.md).
 
 ## Planning
 
@@ -133,7 +134,7 @@ Apply formatting fixes locally:
 | `:core:designsystem` | `CabTheme` and design tokens (colour, tabular type, shape, spacing, elevation, motion, haptics), shared components, adaptive navigation shell, predictive-back container, and the preview matrix. |
 | `:core:model` | Plain Kotlin domain types such as connection state and roster entries. |
 | `:core:protocol` | Pure JVM WiThrottle wire codec, typed commands/events, and the deterministic session reducer. No transport or Android imports. |
-| `:core:data` | Hilt modules, DataStore-backed settings and saved layouts, Room roster scaffold, `NsdManager` discovery, live WiThrottle socket session, and the demo transport. |
+| `:core:data` | Hilt modules, DataStore-backed settings and saved layouts, Room roster scaffold, `DccClient` transport port, `WiThrottleClient` (framing, handshake, heartbeat watchdog, reconnect), `NsdManager` discovery, and the scripted demo server. |
 | `:feature:connection` | Connect gate: discovery, permission rationale, saved layouts, manual entry, typed failures, demo mode, and the Drive hand-off. |
 | `:feature:throttle` | Drive screen composed from `SpeedDisplay`, `StatusPill`, `SectionCard`, and `PrimaryActionButton`; no throttle logic yet. |
 | `:feature:roster` | Roster empty state composed from the design system; no roster logic yet. |
@@ -175,11 +176,16 @@ layer.
   track-power state, and per-loco acquisition state; all time is supplied by the caller. Unknown
   or malformed input becomes a logged `Unknown` event and never terminates a session. Exact wire
   mappings, version gates, and the supported/unsupported matrix are in [`docs/protocol.md`](docs/protocol.md).
-- **Connection boundary.** `:core:data` owns the live socket, the client greeting, the version gate,
-  link-level heartbeats, capped reconnect backoff, discovery, saved layouts, and the demo transport.
-  `:feature:connection` sees only `ConnectionUiState` and typed `ConnectionError` values; it has no
-  socket or protocol imports. Exact state mapping and Android 16 permission notes are in
+- **Connection boundary.** `:core:data` owns the `DccClient` port, the live socket, the client
+  greeting, the version gate, link-level heartbeats and watchdog, capped reconnect backoff with
+  jitter, discovery, saved layouts, and the scripted demo server. `:feature:connection` sees only
+  `ConnectionUiState` and typed `ConnectionError` values; it has no socket or protocol imports.
+  Exact state mapping, fake-server test coverage, and permission notes are in
   [`docs/connection.md`](docs/connection.md).
+- **Local-network permission.** With `targetSdk = 36`, LAN access is implicit through `INTERNET`;
+  no local-network permission is declared or requested. Targeting SDK 37+ will require
+  `android.permission.ACCESS_LOCAL_NETWORK`. Blocked traffic still maps to a typed
+  `ConnectionError.LocalNetworkPermissionDenied`.
 - **Persistence.** DataStore stores the selected app theme and saved layouts (name, host, port, last
   connected). Room contains a single scaffolded `saved_loco` table and DAO for the future roster,
   with schema export enabled. Demo sessions are never persisted.

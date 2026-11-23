@@ -1,40 +1,28 @@
 package dev.opencab.feature.connection
 
-import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.provider.Settings
-import androidx.core.content.ContextCompat
+import dev.opencab.core.data.connection.LocalNetworkAccess
 
 /**
- * The runtime permission OpenCab uses for local-network discovery.
+ * The local-network permission boundary for the connection screen.
  *
- * With the app still targeting SDK 36, `NEARBY_WIFI_DEVICES` is the permission that gates nearby
- * Wi-Fi discovery on Android 13 and later. The rationale and the Settings deep link are tied to
- * this permission.
- *
- * Android 17 introduces `ACCESS_LOCAL_NETWORK` for apps targeting SDK 37. When this app moves to
- * target 37, change the permission name here and declare it in the manifest; the rest of the screen
- * flow stays the same.
+ * With `targetSdk = 36`, Android grants local-network access implicitly through `INTERNET`; no
+ * runtime permission is requested and there is no rationale to show. When the app moves to
+ * `targetSdk = 37`, [requiredPermission] returns `ACCESS_LOCAL_NETWORK` and the manifest must
+ * declare it. Discovery and socket failures still surface as a typed
+ * `ConnectionError.LocalNetworkPermissionDenied` from `:core:data`.
  */
 internal object LocalNetworkPermission {
-    val name: String? =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.NEARBY_WIFI_DEVICES
-        } else {
-            null
-        }
-
-    fun isGranted(context: Context): Boolean {
-        val permission = name ?: return true
-        return ContextCompat.checkSelfPermission(
-            context,
-            permission,
-        ) == PackageManager.PERMISSION_GRANTED
+    fun requiredPermission(context: Context): String? = if (LocalNetworkAccess.requiresPermission(context)) {
+        LocalNetworkAccess.PERMISSION
+    } else {
+        null
     }
+
+    fun isGranted(context: Context): Boolean = LocalNetworkAccess.isGranted(context)
 
     /** Opens this app's system settings page so a blocked permission can be re-allowed. */
     fun openSettings(context: Context) {

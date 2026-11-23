@@ -92,6 +92,8 @@
     <string name="connection_error_version_body">OpenCab needs WiThrottle %1$s or newer. This layout reports %2$s.</string>
     <string name="connection_error_not_withrottle_title">That isn\'t a WiThrottle server</string>
     <string name="connection_error_not_withrottle_body">Check that you\'re connecting to the WiThrottle port, usually 12090.</string>
+    <string name="connection_error_protocol_title">That server uses a different protocol</string>
+    <string name="connection_error_protocol_body">OpenCab couldn\'t understand this server\'s messages. Check the address and port, or choose another layout.</string>
     <string name="connection_error_permission_title">Local network access is off</string>
     <string name="connection_error_permission_body">Allow local network access in Settings, then try again. Manual entry still works.</string>
     <string name="connection_error_unknown_title">Couldn\'t connect</string>

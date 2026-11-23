@@ -43,12 +43,14 @@ internal object SavedServerCodec {
         val host = fields[2]
         if (id.isBlank() || name.isBlank() || host.isBlank()) return null
         val lastConnected = fields[4].takeIf { it.isNotEmpty() }?.toLongOrNull()
-        return SavedServer(
-            id = id,
-            name = name,
-            endpoint = ServerEndpoint(host = host, port = port),
-            lastConnectedEpochMillis = lastConnected,
-        )
+        return runCatching {
+            SavedServer(
+                id = id,
+                name = name,
+                endpoint = ServerEndpoint(host = host, port = port),
+                lastConnectedEpochMillis = lastConnected,
+            )
+        }.getOrNull()
     }
 
     private fun encodeField(value: String): String = Base64.getUrlEncoder()

@@ -6,7 +6,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.opencab.core.data.connection.ConnectionRepository
 import dev.opencab.core.data.connection.DataStoreSavedServerStore
+import dev.opencab.core.data.connection.DccClientFactory
 import dev.opencab.core.data.connection.DefaultConnectionRepository
+import dev.opencab.core.data.connection.DefaultDccClientFactory
 import dev.opencab.core.data.connection.NsdServerDiscovery
 import dev.opencab.core.data.connection.SavedServerStore
 import dev.opencab.core.data.connection.ServerDiscovery
@@ -32,4 +34,10 @@ abstract class ConnectionModule {
     abstract fun bindServerDiscovery(
         implementation: NsdServerDiscovery,
     ): ServerDiscovery
+
+    @Binds
+    @Singleton
+    abstract fun bindDccClientFactory(
+        implementation: DefaultDccClientFactory,
+    ): DccClientFactory
 }

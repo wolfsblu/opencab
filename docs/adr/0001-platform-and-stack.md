@@ -272,21 +272,27 @@ The decision is only real if these exist by the end of Step 1:
   matrix. Plain JVM tests cover golden messages, captured transcripts, every-byte chunk splits,
   round trips, malformed input, duplicates/unknowns, and reducer transitions.
 
-## Addendum: connection layer placement (Step 5)
+## Addendum: connection layer placement (Steps 4–5)
 
 - **Decision.** The Step 4 connection infrastructure required by the Step 5 screen lives in
-  `:core:data`, not in a separate `:protocol:withrottle` adapter: `NsdManager` discovery, the
-  DataStore saved-layout store, `WiThrottleSession` (socket, greeting, version gate, heartbeat,
-  reconnect backoff), `DemoTransport`, and the app-scoped `ConnectionRepository`.
+  `:core:data`, not in a separate `:protocol:withrottle` adapter: the `DccClient` port,
+  `WiThrottleClient` (incremental framing, greeting, version gate, heartbeat watchdog, capped
+  backoff with jitter), `NsdManager` discovery, the DataStore saved-layout store, the scripted
+  `DemoTransport`, and the app-scoped `ConnectionRepository`. `DccClient` currently speaks the
+  WiThrottle vocabulary because there is one adapter; the interface is the seam for a future
+  protocol-agnostic port.
 - **Boundary.** `:feature:connection` depends on `:core:data` and `:core:model`, never on
   `:core:protocol`. It renders immutable `ConnectionUiState` and emits typed actions; sockets,
   protocol events, and exception text are below the ViewModel.
-- **Local-network permission.** With `targetSdk = 36`, Android uses `NEARBY_WIFI_DEVICES` as the
-  temporary local-network permission for nearby Wi-Fi discovery. The manifest declares it with
-  `neverForLocation`. When the app moves to `targetSdk = 37`, `LocalNetworkPermission` switches to
-  `ACCESS_LOCAL_NETWORK` and the manifest must declare it. The screen shows the rationale before
-  requesting, never loops the dialog, and offers an app-Settings deep link after denial. Manual
-  entry remains available.
+- **Local-network permission.** Verified against Android's current Local network permission
+  documentation: with `targetSdk = 36`, LAN access is implicitly granted through `INTERNET`; apps
+  must not declare or request `ACCESS_LOCAL_NETWORK`, and the Android 16 opt-in
+  `NEARBY_WIFI_DEVICES` arrangement is deprecated. The manifest therefore declares only `INTERNET`
+  and `ACCESS_NETWORK_STATE`. When the app moves to `targetSdk = 37`, `LocalNetworkAccess` and
+  `LocalNetworkPermission` switch to `android.permission.ACCESS_LOCAL_NETWORK` and the manifest
+  must declare it. The transport maps blocked sockets/NsdManager calls to
+  `ConnectionError.LocalNetworkPermissionDenied`; no layer requests a permission or exposes system
+  text.
 - **Drive hand-off.** The nav graph now starts at `CONNECTION_ROUTE`. Once the repository reports
   `Connected`, the gate is removed from the back stack and Drive becomes the visible destination.
   Drive reads the same repository, so its link state and demo banner cannot disagree with Connect.

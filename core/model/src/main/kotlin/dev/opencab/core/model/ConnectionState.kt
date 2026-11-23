@@ -9,6 +9,14 @@ data class ServerEndpoint(
 ) {
     init {
         require(host.isNotBlank()) { "Host must not be blank" }
+        require(host == host.trim()) { "Host must not contain surrounding whitespace" }
+        require(!host.any { it.isWhitespace() }) { "Host must not contain whitespace" }
+        require(!host.contains("://")) { "Host must not contain a scheme" }
+        require(!host.contains('/')) { "Host must not contain a path" }
+        require(host.length <= MAX_HOST_LENGTH) { "Host is too long: ${host.length}" }
+        require(host.any { it.isLetterOrDigit() }) { "Host must contain a letter or digit" }
+        require(host.count { it == ':' } != 1) { "Host must not include a port" }
+        require(!host.contains("]:")) { "Host must not include a port" }
         require(port in MIN_PORT..MAX_PORT) { "Port out of range: $port" }
     }
 
@@ -21,6 +29,7 @@ data class ServerEndpoint(
         const val DEFAULT_PORT: Int = 12090
         const val MIN_PORT: Int = 1
         const val MAX_PORT: Int = 65535
+        const val MAX_HOST_LENGTH: Int = 253
     }
 }
 
@@ -37,6 +46,11 @@ data class SavedServer(
     val endpoint: ServerEndpoint,
     val lastConnectedEpochMillis: Long? = null,
 ) {
+    init {
+        require(id.isNotBlank()) { "Saved server id must not be blank" }
+        require(name.isNotBlank()) { "Saved server name must not be blank" }
+    }
+
     companion object {
         fun create(
             name: String,
@@ -115,6 +129,9 @@ sealed interface ConnectionError {
 
     /** The socket answered with something that is not a WiThrottle greeting. */
     data object NotWiThrottle : ConnectionError
+
+    /** The handshake was WiThrottle-shaped but contained an unrecognised message. */
+    data object ProtocolMismatch : ConnectionError
 
     /** Anything else. The UI still offers a retry rather than showing the exception. */
     data object Unknown : ConnectionError

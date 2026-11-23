@@ -36,6 +36,8 @@ internal object ManualServerValidator {
             trimmed.length > MAX_HOST_LENGTH -> ManualFieldError.InvalidHost
             !allowedHostCharacters.matches(trimmed) -> ManualFieldError.InvalidHost
             trimmed.none { it.isLetterOrDigit() } -> ManualFieldError.InvalidHost
+            trimmed.count { it == ':' } == 1 -> ManualFieldError.InvalidHost
+            trimmed.contains("]:") -> ManualFieldError.InvalidHost
             else -> null
         }
     }

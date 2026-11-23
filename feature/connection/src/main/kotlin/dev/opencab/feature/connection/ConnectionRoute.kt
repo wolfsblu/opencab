@@ -68,7 +68,7 @@ fun ConnectionRoute(
                 ConnectionAction.DismissFailure -> viewModel.onDismissFailure()
 
                 ConnectionAction.RequestPermission -> {
-                    val permission = LocalNetworkPermission.name
+                    val permission = LocalNetworkPermission.requiredPermission(context)
                     if (permission == null) {
                         viewModel.onPermissionResult(granted = true)
                     } else {

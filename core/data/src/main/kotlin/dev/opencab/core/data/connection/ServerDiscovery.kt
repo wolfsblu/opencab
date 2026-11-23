@@ -18,7 +18,11 @@ data class DiscoverySnapshot(
 
 /** Best-effort local-network discovery. Manual entry is always a first-class fallback. */
 interface ServerDiscovery {
-    fun scan(timeoutMillis: Long): Flow<DiscoverySnapshot>
+    /**
+     * Browses for the configured service. The flow is cancellable and ends no later than
+     * [timeoutMillis]; the terminal snapshot has [DiscoverySnapshot.finished] set.
+     */
+    fun scan(timeoutMillis: Long = SCAN_TIMEOUT_MILLIS): Flow<DiscoverySnapshot>
 
     companion object {
         const val SERVICE_TYPE: String = "_withrottle._tcp"

@@ -30,6 +30,16 @@ class NsdServerDiscovery @Inject constructor(
     @param:ApplicationContext private val context: Context,
 ) : ServerDiscovery {
     override fun scan(timeoutMillis: Long): Flow<DiscoverySnapshot> = channelFlow {
+        if (!LocalNetworkAccess.isGranted(context)) {
+            send(
+                DiscoverySnapshot(
+                    finished = true,
+                    error = ConnectionError.LocalNetworkPermissionDenied,
+                ),
+            )
+            return@channelFlow
+        }
+
         val nsdManager = context.getSystemService(NsdManager::class.java)
         if (nsdManager == null) {
             send(
@@ -42,9 +52,16 @@ class NsdServerDiscovery @Inject constructor(
         }
 
         val found = linkedMapOf<String, DiscoveredServer>()
+        val serviceEndpoints = mutableMapOf<String, String>()
         val stopped = AtomicBoolean(false)
         val failure = CompletableDeferred<ConnectionError>()
-        val discoveryListener = discoveryListener(nsdManager, found, stopped, failure)
+        val discoveryListener = discoveryListener(
+            nsdManager = nsdManager,
+            found = found,
+            serviceEndpoints = serviceEndpoints,
+            stopped = stopped,
+            failure = failure,
+        )
 
         try {
             nsdManager.discoverServices(
@@ -79,6 +96,7 @@ class NsdServerDiscovery @Inject constructor(
     private fun ProducerScope<DiscoverySnapshot>.discoveryListener(
         nsdManager: NsdManager,
         found: MutableMap<String, DiscoveredServer>,
+        serviceEndpoints: MutableMap<String, String>,
         stopped: AtomicBoolean,
         failure: CompletableDeferred<ConnectionError>,
     ): NsdManager.DiscoveryListener = object : NsdManager.DiscoveryListener {
@@ -87,17 +105,22 @@ class NsdServerDiscovery @Inject constructor(
         override fun onServiceFound(serviceInfo: NsdServiceInfo) {
             resolve(nsdManager, serviceInfo, stopped) { server ->
                 if (stopped.get()) return@resolve
-                synchronized(found) { found[server.endpoint.display] = server }
+                synchronized(found) {
+                    found[server.endpoint.display] = server
+                    serviceEndpoints[serviceInfo.serviceName.orEmpty()] = server.endpoint.display
+                }
                 emitSnapshot(found, finished = false)
             }
         }
 
         override fun onServiceLost(serviceInfo: NsdServiceInfo) {
             if (stopped.get()) return
-            serviceInfo.endpointOrNull()?.let { endpoint ->
-                synchronized(found) { found.remove(endpoint.display) }
-                emitSnapshot(found, finished = false)
+            synchronized(found) {
+                val display = serviceEndpoints.remove(serviceInfo.serviceName.orEmpty())
+                    ?: serviceInfo.endpointOrNull()?.display
+                if (display != null) found.remove(display)
             }
+            emitSnapshot(found, finished = false)
         }
 
         override fun onDiscoveryStopped(serviceType: String) = Unit

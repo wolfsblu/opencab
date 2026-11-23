@@ -18,6 +18,41 @@ class ServerEndpointTest {
     }
 
     @Test
+    fun hostMustBeAPlainAddress() {
+        val invalidHosts = listOf(
+            "http://jmri.local",
+            "jmri.local/path",
+            "jmri.local extra",
+            "  ",
+            ":",
+            "jmri.local:12090",
+            "[fe80::1]:12090",
+        )
+        invalidHosts.forEach { host ->
+            assertThrows("expected $host to be rejected", IllegalArgumentException::class.java) {
+                ServerEndpoint(host)
+            }
+        }
+    }
+
+    @Test
+    fun hostLengthIsBounded() {
+        assertThrows(IllegalArgumentException::class.java) {
+            ServerEndpoint("a".repeat(ServerEndpoint.MAX_HOST_LENGTH + 1))
+        }
+    }
+
+    @Test
+    fun savedServerRequiresAnIdAndName() {
+        assertThrows(IllegalArgumentException::class.java) {
+            SavedServer(id = "", name = "Home", endpoint = ServerEndpoint("jmri.local"))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            SavedServer(id = "id", name = " ", endpoint = ServerEndpoint("jmri.local"))
+        }
+    }
+
+    @Test
     fun portMustBeInRange() {
         assertThrows(IllegalArgumentException::class.java) {
             ServerEndpoint("jmri.local", 0)

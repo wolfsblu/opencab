@@ -5,6 +5,7 @@ import dev.opencab.core.model.ServerEndpoint
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.Base64
 
 class SavedServerCodecTest {
     @Test
@@ -41,6 +42,18 @@ class SavedServerCodecTest {
         val decoded = SavedServerCodec.decode(encoded)
 
         assertEquals(listOf(valid), decoded)
+    }
+
+    @Test
+    fun invalidHostRecordsAreSkipped() {
+        val fields = listOf("id", "Bad", "http://192.168.1.24", "12090", "")
+            .map { value ->
+                Base64.getUrlEncoder().withoutPadding()
+                    .encodeToString(value.toByteArray(Charsets.UTF_8))
+            }
+        val encoded = fields.joinToString(".")
+
+        assertTrue(SavedServerCodec.decode(encoded).isEmpty())
     }
 
     @Test

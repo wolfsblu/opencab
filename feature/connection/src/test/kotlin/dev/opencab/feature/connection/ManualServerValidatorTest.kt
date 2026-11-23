@@ -29,6 +29,14 @@ class ManualServerValidatorTest {
             ManualServerValidator.validateHost("192.168.1.24 extra"),
         )
         assertEquals(ManualFieldError.InvalidHost, ManualServerValidator.validateHost(":"))
+        assertEquals(
+            ManualFieldError.InvalidHost,
+            ManualServerValidator.validateHost("jmri.local:12090"),
+        )
+        assertEquals(
+            ManualFieldError.InvalidHost,
+            ManualServerValidator.validateHost("[fe80::1]:12090"),
+        )
     }
 
     @Test

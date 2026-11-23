@@ -318,7 +318,7 @@ Each state below has: how we detect it, what the operator sees, what they can do
 
 ### 6.3 Permission denied (discovery or local network)
 
-- **Detection:** `NEARBY_WIFI_DEVICES` denied (API 33+), or LAN socket blocked by Android 16+ local-network protection.
+- **Detection:** `ACCESS_LOCAL_NETWORK` denied on Android 17+ when targeting SDK 37+, or a LAN socket/NsdManager call blocked by the platform. Apps targeting SDK 36 receive an implicit `INTERNET` grant and show no permission state.
 - **Sees:** one line in the gate: `OpenCab needs permission to find devices on your Wi-Fi.` · `Allow` · `Enter address instead`.
 - **Do:** request on first meaningful use, with the system rationale already on screen; if permanently denied, replace `Allow` with `Open settings` and keep manual entry working where the OS allows it.
 - **Never:** loop the permission dialog; block a manual connection that the OS permits; use the word "permission" without saying what for.
