@@ -2,8 +2,13 @@ package dev.opencab.ui
 
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
@@ -14,11 +19,17 @@ import androidx.navigation.compose.rememberNavController
 import dev.opencab.core.designsystem.navigation.CabNavigationDestination
 import dev.opencab.core.designsystem.navigation.CabNavigationSuite
 import dev.opencab.core.designsystem.navigation.CabPredictiveBackContainer
+import dev.opencab.core.designsystem.theme.CabMotion
 import dev.opencab.core.designsystem.theme.CabTheme
 import dev.opencab.feature.connection.CONNECTION_ROUTE
 import dev.opencab.feature.connection.ConnectionRoute
+import dev.opencab.feature.roster.LocoEditorRoute
+import dev.opencab.feature.roster.LocoPickerSheet
+import dev.opencab.feature.roster.ROSTER_CREATE_ROUTE
+import dev.opencab.feature.roster.ROSTER_EDIT_ROUTE
 import dev.opencab.feature.roster.ROSTER_ROUTE
 import dev.opencab.feature.roster.RosterRoute
+import dev.opencab.feature.roster.rosterEditRoute
 import dev.opencab.feature.settings.SETTINGS_ROUTE
 import dev.opencab.feature.settings.SettingsRoute
 import dev.opencab.feature.throttle.DRIVE_ROUTE
@@ -45,6 +56,7 @@ fun OpenCabApp(
             )
         }
     val motion = CabTheme.motion
+    var pickerVisible by rememberSaveable { mutableStateOf(false) }
 
     CabNavigationSuite(
         destinations = navigationDestinations,
@@ -53,41 +65,77 @@ fun OpenCabApp(
         modifier = modifier,
         visible = isTopLevelDestination,
     ) {
-        CabPredictiveBackContainer(
-            enabled = navController.previousBackStackEntry != null,
-            onBack = { navController.popBackStack() },
-        ) {
-            NavHost(
-                navController = navController,
-                startDestination = CONNECTION_ROUTE,
-                enterTransition = { fadeIn(motion.fadeThrough) },
-                exitTransition = { fadeOut(motion.duration(durationMillis = 90)) },
-                popEnterTransition = { fadeIn(motion.fadeThrough) },
-                popExitTransition = { fadeOut(motion.duration(durationMillis = 90)) },
+        Box(modifier = Modifier.fillMaxSize()) {
+            CabPredictiveBackContainer(
+                enabled = navController.previousBackStackEntry != null,
+                onBack = { navController.popBackStack() },
             ) {
-                composable(DRIVE_ROUTE) {
-                    DriveRoute(
-                        onOpenConnection = { navController.navigate(CONNECTION_ROUTE) },
-                        onChooseLocomotive = { navController.navigateToTopLevel(ROSTER_ROUTE) },
-                    )
-                }
-                composable(ROSTER_ROUTE) {
-                    RosterRoute()
-                }
-                composable(SETTINGS_ROUTE) {
-                    SettingsRoute(
-                        onOpenConnection = { navController.navigate(CONNECTION_ROUTE) },
-                    )
-                }
-                composable(CONNECTION_ROUTE) {
-                    ConnectionRoute(
-                        onBack = {
-                            if (!navController.popBackStack()) onExit()
-                        },
-                        onOpenDrive = { navController.openDriveFromConnection() },
-                    )
-                }
+                OpenCabNavHost(
+                    navController = navController,
+                    motion = motion,
+                    onChooseLocomotive = { pickerVisible = true },
+                    onExit = onExit,
+                )
             }
+            if (pickerVisible) {
+                LocoPickerSheet(onDismissRequest = { pickerVisible = false })
+            }
+        }
+    }
+}
+
+@Composable
+private fun OpenCabNavHost(
+    navController: NavHostController,
+    motion: CabMotion,
+    onChooseLocomotive: () -> Unit,
+    onExit: () -> Unit,
+) {
+    NavHost(
+        navController = navController,
+        startDestination = CONNECTION_ROUTE,
+        enterTransition = { fadeIn(motion.fadeThrough) },
+        exitTransition = { fadeOut(motion.duration(durationMillis = 90)) },
+        popEnterTransition = { fadeIn(motion.fadeThrough) },
+        popExitTransition = { fadeOut(motion.duration(durationMillis = 90)) },
+    ) {
+        composable(DRIVE_ROUTE) {
+            DriveRoute(
+                onOpenConnection = { navController.navigate(CONNECTION_ROUTE) },
+                onChooseLocomotive = onChooseLocomotive,
+            )
+        }
+        composable(ROSTER_ROUTE) {
+            RosterRoute(
+                onAddLoco = { navController.navigate(ROSTER_CREATE_ROUTE) },
+                onEditLoco = { locoId -> navController.navigate(rosterEditRoute(locoId)) },
+                onOpenDrive = { navController.navigateToTopLevel(DRIVE_ROUTE) },
+            )
+        }
+        composable(ROSTER_CREATE_ROUTE) {
+            LocoEditorRoute(
+                onBack = { navController.popBackStack() },
+                onSaved = { _, _ -> navController.popBackStack() },
+            )
+        }
+        composable(ROSTER_EDIT_ROUTE) {
+            LocoEditorRoute(
+                onBack = { navController.popBackStack() },
+                onSaved = { _, _ -> navController.popBackStack() },
+            )
+        }
+        composable(SETTINGS_ROUTE) {
+            SettingsRoute(
+                onOpenConnection = { navController.navigate(CONNECTION_ROUTE) },
+            )
+        }
+        composable(CONNECTION_ROUTE) {
+            ConnectionRoute(
+                onBack = {
+                    if (!navController.popBackStack()) onExit()
+                },
+                onOpenDrive = { navController.openDriveFromConnection() },
+            )
         }
     }
 }

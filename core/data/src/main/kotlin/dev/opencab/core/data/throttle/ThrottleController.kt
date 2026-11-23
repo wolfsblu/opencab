@@ -2,7 +2,9 @@ package dev.opencab.core.data.throttle
 
 import dev.opencab.core.data.connection.DccClient
 import dev.opencab.core.data.connection.DccConnectionState
+import dev.opencab.core.data.roster.toRosterAddressOrNull
 import dev.opencab.core.model.ConnectionError
+import dev.opencab.core.model.ServerRosterEntry
 import dev.opencab.core.protocol.LocoAddress
 import dev.opencab.core.protocol.WiThrottleCommand
 import dev.opencab.core.protocol.WiThrottleEvent
@@ -133,6 +135,10 @@ class ThrottleController(
             linkError = linkError,
             trackPower = reducer.state.power,
             slots = slots.values.map { it.toUi(reducer.state, config) },
+            serverRoster = reducer.state.roster.mapNotNull { entry ->
+                val address = entry.address.toRosterAddressOrNull() ?: return@mapNotNull null
+                ServerRosterEntry(id = entry.name, name = entry.name, address = address)
+            },
             lastAlert = lastAlert,
         )
     }

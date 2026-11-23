@@ -4,15 +4,28 @@ OpenCab is a production-grade Android scaffold for a model-railroad cab controll
 milestone establishes the build, module boundaries, theme, dependency injection, persistence
 foundations, an adaptive navigation shell, a pure-Kotlin WiThrottle protocol core, the connection
 gate (mDNS discovery, saved layouts, manual entry, and a live socket handshake), the multi-slot
-throttle domain engine, and the hero drive screen.
+throttle domain engine, the hero drive screen, and a persistent locomotive roster with a
+Drive picker.
 
 ## Status
 
 The app builds, launches into the **Connect** gate, and finds WiThrottle servers. The design system
 provides a branded Material 3 theme with opt-in dynamic colour, tabular numeric readouts, shared
-status/control components, and an adaptive navigation shell. Drive is now the hero throttle: a
-grab-the-handle lever, step readout, direction control, large Stop, press-and-hold functions, and
-inline link-loss states, laid out for one-handed use in portrait, landscape, and tablet.
+status/control components, and an adaptive navigation shell. Drive is now the hero throttle: one
+instrument bay with a recessed readout window, a full-height grab-the-handle lever with detent
+ticks, a Direction + Stop deck integrated into the bay, press-and-hold functions,
+and inline link-loss states. Compact portrait puts Throttle and Functions on tabs over a full-bleed
+bay with the Direction + Stop deck pinned and inset from the display corners; landscape puts the
+deck under the readout and lets the lever span the bay height; tablets use a capped, centred
+console. The function grid stays visually quieter than the throttle.
+
+Roster is live. Locomotives are stored in Room with name, typed DCC address, local and server
+function labels, favourite, colour/icon, and last-used time. The Drive picker searches by name or
+address, groups favourites and recents, and adds an address in place; the roster editor handles
+rename, favourite, appearance, and labels. Changing an address appends a new entry instead of
+rewriting history. Duplicate addresses are rejected at the database and repository layers, and
+re-selecting the active locomotive never creates a second throttle slot. See
+[`docs/roster.md`](docs/roster.md).
 
 `:core:data` contains the `ThrottleController` engine: multiple desired slots, immutable
 `ThrottleUiState`, acquisition/steal/release, 10 Hz speed coalescing with a guaranteed trailing
@@ -21,6 +34,11 @@ value, priority stop/E-stop, disconnect/stale/re-acquire, per-loco E-stop, and f
 surface used by the drive screen. Its API and deterministic virtual-time tests are documented in
 [`docs/throttle-engine.md`](docs/throttle-engine.md); the screen is documented in
 [`docs/drive-screen.md`](docs/drive-screen.md).
+
+`:core:data` also owns the roster repository: a typed-address Room entity with a v1→v2 migration,
+duplicate-address reporting, label encoding, last-used tracking, and server-roster import. Roster
+and picker view models see only `RosterRepository` and the narrow `ThrottleUiSource` port; the
+protocol never crosses into the feature UI.
 
 `:core:protocol` now contains the WiThrottle line codec, typed commands and events, and a pure
 session reducer. It has no Android, socket, thread, clock, or coroutine dependency and is covered
@@ -137,6 +155,12 @@ Run the drive-screen mapping tests, and the gesture/state Compose tests on a dev
 ./gradlew :feature:throttle:connectedDebugAndroidTest
 ```
 
+Run roster validation, persistence, migration, duplicate, picker, and editor tests:
+
+```bash
+./gradlew :core:model:test :core:data:testDebugUnitTest :feature:roster:testDebugUnitTest
+```
+
 Every shared component and feature screen carries a `@CabPreview` matrix: light/dark, 100 %/200 %
 font, phone portrait, phone landscape, and tablet. There is no screenshot-test harness configured,
 so previews are the visual review surface; the reasoning is recorded in
@@ -156,10 +180,10 @@ Apply formatting fixes locally:
 | `:core:designsystem` | `CabTheme` and design tokens (colour, tabular type, shape, spacing, elevation, motion, haptics), shared components, adaptive navigation shell, predictive-back container, and the preview matrix. |
 | `:core:model` | Plain Kotlin domain types such as connection state and roster entries. |
 | `:core:protocol` | Pure JVM WiThrottle wire codec, typed commands/events, and the deterministic session reducer. No transport or Android imports. |
-| `:core:data` | Hilt modules, DataStore-backed settings and saved layouts, Room roster scaffold, `DccClient` transport port, `WiThrottleClient` (framing, handshake, heartbeat watchdog, reconnect), `NsdManager` discovery, and the multi-slot `ThrottleController` engine. |
+| `:core:data` | Hilt modules, DataStore-backed settings and saved layouts, the Room roster repository and v1→v2 migration, `DccClient` transport port, `WiThrottleClient` (framing, handshake, heartbeat watchdog, reconnect), `NsdManager` discovery, and the multi-slot `ThrottleController` engine. |
 | `:feature:connection` | Connect gate: discovery, permission rationale, saved layouts, manual entry, typed failures, and the Drive hand-off. |
-| `:feature:throttle` | Hero drive screen: loco header, grab-the-handle lever, step/estimate readout, nudge, direction confirmation, Stop, press-and-hold functions, inline link-loss/issue states, and the `DriveViewModel` that maps `ThrottleSession` state. |
-| `:feature:roster` | Roster empty state composed from the design system; no roster logic yet. |
+| `:feature:throttle` | Hero drive screen: loco header, one instrument bay with a recessed step/estimate readout, a full-height grab-the-handle lever, an integrated Direction + Stop deck, portrait Throttle/Functions tabs with the deck pinned, press-and-hold functions, inline link-loss/issue states, and the `DriveViewModel` that maps `ThrottleSession` state and local roster function labels. |
+| `:feature:roster` | Room-backed roster list, searchable Drive picker with favourites/recents/add-address, and the loco detail/editor with typed address validation, favourite, colour/icon, and function labels. |
 | `:feature:settings` | Theme selection backed by DataStore, plus connection and about entries. |
 
 Feature modules expose their own route constants and root composables. `:app` owns the `NavHost`
@@ -221,19 +245,19 @@ layer.
   `android.permission.ACCESS_LOCAL_NETWORK`. Blocked traffic still maps to a typed
   `ConnectionError.LocalNetworkPermissionDenied`.
 - **Persistence.** DataStore stores the selected app theme and saved layouts (name, host, port, last
-  connected). Room contains a single scaffolded `saved_loco` table and DAO for the future roster,
-  with schema export enabled.
+  connected). Room contains the `roster_loco` table with a unique typed-address index, local and
+  server function labels, favourite, colour/icon keys, and last-used time. Schema export is
+  enabled and the v1→v2 migration is covered by a Robolectric test.
 - **Quality gates.** `./gradlew check` runs unit tests, lint, detekt, and Spotless. The GitHub
   Actions workflow runs the same checks and assembles the debug APK and instrumentation test APK.
 
 ## Intentionally not implemented
 
 - DCC, LocoNet, XpressNet, or any other command-station transport
-- Roster-driven acquisition (the drive screen renders an acquired slot; Step 8 supplies it)
 - Multi-throttle UI, app-side linking, and linked consists
 - Calibration, speed-cap, hold-to-run, and haptic-intensity settings (the UI accepts the values)
 - Process-death restoration of open throttle slots
-- Roster CRUD beyond the empty database scaffold
+- Roster delete and bulk editing; address changes deliberately append rather than replace
 - Diagnostics log export and the remaining settings that tune reconnect behaviour
 
 ## Continuous integration

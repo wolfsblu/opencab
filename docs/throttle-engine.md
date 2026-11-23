@@ -141,7 +141,8 @@ No test uses wall-clock sleeps or non-deterministic ordering.
 ## Known limits
 
 - The drive screen uses one acquired slot. Multi-throttle, app-side linking, and consists are
-  Step 9; roster-driven acquisition is Step 8.
+  Step 9. Roster-driven acquisition now goes through `ThrottleSession.acquirePrimary`, which
+  releases any previous desired slot and never duplicates the active address.
 - Slots are in memory only; process-death restoration belongs to later steps.
 - The engine uses the default WiThrottle throttle key and the reducer's default identity.
 - Track power is status-only; `SetTrackPower` remains disabled in the reducer.

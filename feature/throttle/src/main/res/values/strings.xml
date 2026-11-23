@@ -21,6 +21,7 @@
     <string name="drive_power_off_body">The layout may restore power at any time.</string>
 
     <string name="drive_step_value">%1$d</string>
+    <string name="drive_step_label">STEP</string>
     <string name="drive_step_total">/ %1$d steps</string>
     <string name="drive_step_state">%1$d of %2$d steps, %3$s</string>
     <string name="drive_last_known">Last known</string>
@@ -30,17 +31,16 @@
     <string name="drive_estimate_description">Estimated scale speed %1$d %2$s</string>
     <string name="drive_estimate_kmh_description">kilometres per hour</string>
     <string name="drive_estimate_mph_description">miles per hour</string>
-    <string name="drive_scale_caption">Estimated from scale calibration</string>
+    <string name="drive_scale_caption">Scale estimate</string>
 
     <string name="drive_lever_description">Throttle lever</string>
     <string name="drive_announcement">Speed %1$d of %2$d steps</string>
-    <string name="drive_nudge_up">Increase one step</string>
-    <string name="drive_nudge_down">Decrease one step</string>
-    <string name="drive_nudge_up_short">+1</string>
-    <string name="drive_nudge_down_short">−1</string>
     <string name="drive_stop">Stop train</string>
+    <string name="drive_stop_short">STOP</string>
     <string name="drive_stop_description">Stop train. %1$d of %2$d steps.</string>
     <string name="drive_direction">Direction</string>
+    <string name="drive_direction_short_forward">FWD</string>
+    <string name="drive_direction_short_reverse">REV</string>
     <string name="drive_direction_state">Direction: %1$s</string>
     <string name="drive_forward">Forward</string>
     <string name="drive_reverse">Reverse</string>
@@ -49,10 +49,8 @@
     <string name="drive_reverse_prompt_message">The train is moving. Stopping first prevents a direction change under power.</string>
     <string name="drive_reverse_confirm">Stop &amp; reverse</string>
 
-    <string name="drive_functions">Functions</string>
-    <string name="drive_functions_count">Functions · %1$d on</string>
-    <string name="drive_functions_show">Show functions</string>
-    <string name="drive_functions_hide">Hide functions</string>
+    <string name="drive_tab_throttle">Throttle</string>
+    <string name="drive_tab_functions">Functions</string>
     <string name="drive_function_description">Function %1$d, %2$s</string>
 
     <string name="drive_issue_in_use_title">Locomotive in use</string>

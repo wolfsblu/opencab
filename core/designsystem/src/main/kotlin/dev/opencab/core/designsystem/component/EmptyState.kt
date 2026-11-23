@@ -87,7 +87,7 @@ private fun EmptyStatePreview() {
     CabPreviewSurface {
         EmptyState(
             title = "No locomotives yet",
-            message = "Saved locomotives and the layout roster will appear here once a command station is connected.",
+            message = "Add a locomotive to the roster to start driving.",
         )
     }
 }

@@ -341,7 +341,7 @@ feature; this layer only provides the protocol mechanics.
 | Consist list | Yes | No (server-only) | Cached | `RCC`/`RCL`/`RCD` |
 | Consist commands | No (server-only) | Yes | Optimistic cache | `RC+`, `RC-`, `RCP`, `RCR` |
 | Consist lead | No (server-only) | Yes | Emits `C` | `C<lead>` |
-| Roster list | Yes | No | Stored for later import | `RL` |
+| Roster list | Yes | No | Exposed for roster import | `RL` |
 | Server type/description/port | Yes | No | Stored | `HT`, `Ht`, `PW` |
 | Alerts/info | Yes | No | Last message stored | `HM`, `Hm` |
 | Fast clock | Yes | No | Ignored | `PFT` |

@@ -1,0 +1,107 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "2ba922c2b6e853c0da51c639abe89019",
+    "entities": [
+      {
+        "tableName": "roster_loco",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `address` INTEGER NOT NULL, `addressType` TEXT NOT NULL, `functionLabels` TEXT NOT NULL, `serverFunctionLabels` TEXT NOT NULL, `isFavorite` INTEGER NOT NULL, `colorKey` TEXT NOT NULL, `iconKey` TEXT NOT NULL, `lastUsedEpochMillis` INTEGER, `serverRosterId` TEXT, `createdAtEpochMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "addressType",
+            "columnName": "addressType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "functionLabels",
+            "columnName": "functionLabels",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serverFunctionLabels",
+            "columnName": "serverFunctionLabels",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isFavorite",
+            "columnName": "isFavorite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "colorKey",
+            "columnName": "colorKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "iconKey",
+            "columnName": "iconKey",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastUsedEpochMillis",
+            "columnName": "lastUsedEpochMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "serverRosterId",
+            "columnName": "serverRosterId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAtEpochMillis",
+            "columnName": "createdAtEpochMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_roster_loco_address_addressType",
+            "unique": true,
+            "columnNames": [
+              "address",
+              "addressType"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_roster_loco_address_addressType` ON `${TABLE_NAME}` (`address`, `addressType`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2ba922c2b6e853c0da51c639abe89019')"
+    ]
+  }
+}

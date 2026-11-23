@@ -45,6 +45,18 @@ class DriveStateMappingTest {
     }
 
     @Test
+    fun localFunctionLabelsOverrideTheLayoutLabels() {
+        val state = mapDriveUiState(
+            throttle = throttle(slot = slot()),
+            connection = ConnectionState.Connected(target),
+            localFunctionLabels = mapOf(1 to "Horn"),
+        )
+
+        assertEquals("Horn", state.loco?.functions?.first { it.number == 1 }?.label)
+        assertEquals("Headlight", state.loco?.functions?.first { it.number == 0 }?.label)
+    }
+
+    @Test
     fun reportsInUseIssueAndDisablesControl() {
         val state = mapDriveUiState(
             throttle = throttle(

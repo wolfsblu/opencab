@@ -1,6 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="roster_title">Roster</string>
+    <string name="roster_subtitle">%1$d locomotives</string>
     <string name="roster_empty_title">No locomotives yet</string>
-    <string name="roster_empty_body">Locomotives from a connected layout will appear here.</string>
+    <string name="roster_empty_body">Add the address of your first locomotive to start driving.</string>
+    <string name="roster_add_content_description">Add locomotive</string>
+    <string name="roster_add_first">Add first locomotive</string>
+    <string name="roster_drive_content_description">Drive %1$s</string>
+    <string name="roster_favorite_content_description">Favorite %1$s</string>
+    <string name="roster_unfavorite_content_description">Remove %1$s from favorites</string>
+    <string name="roster_active">Driving</string>
+    <string name="roster_import">Import %1$d from layout</string>
+    <string name="roster_import_done">Imported %1$d locomotives from the layout.</string>
+    <string name="roster_import_none">No new locomotives to import.</string>
+
+    <string name="picker_title">Choose locomotive</string>
+    <string name="picker_close">Close</string>
+    <string name="picker_search_label">Search name or address</string>
+    <string name="picker_search_placeholder">Black Five, 3412, L3412</string>
+    <string name="picker_empty_title">No locomotives yet</string>
+    <string name="picker_empty_body">Add an address and the layout will hand over the locomotive.</string>
+    <string name="picker_add_first">Add first locomotive</string>
+    <string name="picker_add_address">Add address</string>
+    <string name="picker_no_matches">No matching locomotives</string>
+    <string name="picker_no_matches_body">Try another name or address, or add this address.</string>
+    <string name="picker_section_favorites">Favorites</string>
+    <string name="picker_section_recents">Recent</string>
+    <string name="picker_section_all">All locomotives</string>
+    <string name="picker_section_matches">Matches</string>
+    <string name="picker_add_title">Add a locomotive</string>
+    <string name="picker_name">Name (optional)</string>
+    <string name="picker_name_placeholder">Loco %1$s</string>
+    <string name="picker_address">DCC address</string>
+    <string name="picker_address_hint">Short 1–127 · Long 1–10239</string>
+    <string name="picker_cancel">Cancel</string>
+    <string name="picker_add_and_drive">Add &amp; drive</string>
+    <string name="picker_use_existing">Use existing</string>
+    <string name="picker_duplicate">%1$s is already in your roster.</string>
+    <string name="picker_duplicate_title">Address already used</string>
+    <string name="picker_invalid_required">Enter an address.</string>
+    <string name="picker_invalid_number">Use digits only.</string>
+    <string name="picker_invalid_out_of_range">Address must be at least 1.</string>
+    <string name="picker_invalid_short">Short addresses are 1–127.</string>
+    <string name="picker_invalid_long">Long addresses are 1–10239.</string>
+    <string name="picker_ambiguous">1–127 can be a short or long address. Using short unless you choose long.</string>
+    <string name="picker_ambiguous_long">Using a long address. Numbers 1–127 can also be short.</string>
+    <string name="picker_using_short">Will use a short address.</string>
+    <string name="picker_using_long">Will use a long address.</string>
+
+    <string name="editor_new_title">New locomotive</string>
+    <string name="editor_edit_title">Edit %1$s</string>
+    <string name="editor_name">Name</string>
+    <string name="editor_name_required">Give the locomotive a name.</string>
+    <string name="editor_address">DCC address</string>
+    <string name="editor_type">Address type</string>
+    <string name="editor_type_auto">Auto</string>
+    <string name="editor_type_short">Short</string>
+    <string name="editor_type_long">Long</string>
+    <string name="editor_favorite">Favorite</string>
+    <string name="editor_color">Colour</string>
+    <string name="editor_icon">Icon</string>
+    <string name="editor_functions">Function labels</string>
+    <string name="editor_functions_body">Local labels override labels sent by the layout.</string>
+    <string name="editor_functions_show">Show labels</string>
+    <string name="editor_functions_hide">Hide labels</string>
+    <string name="editor_function_placeholder">Layout: %1$s</string>
+    <string name="editor_save">Save</string>
+    <string name="editor_address_changed">Changing the address creates a new roster entry; the current one is kept.</string>
+    <string name="editor_duplicate">%1$s already uses that address.</string>
+    <string name="editor_error_not_found">This locomotive is no longer in the roster.</string>
+    <string name="editor_address_required">Enter an address.</string>
+    <string name="editor_invalid_address">Check the address range.</string>
+
+    <string name="roster_color_blue">Blue</string>
+    <string name="roster_color_teal">Teal</string>
+    <string name="roster_color_green">Green</string>
+    <string name="roster_color_amber">Amber</string>
+    <string name="roster_color_red">Red</string>
+    <string name="roster_color_violet">Violet</string>
+
+    <string name="roster_icon_steam">Steam</string>
+    <string name="roster_icon_diesel">Diesel</string>
+    <string name="roster_icon_electric">Electric</string>
+    <string name="roster_icon_shunter">Shunter</string>
 </resources>

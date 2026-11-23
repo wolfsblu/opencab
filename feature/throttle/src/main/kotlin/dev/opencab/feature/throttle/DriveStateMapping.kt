@@ -18,14 +18,16 @@ internal fun mapDriveUiState(
     throttle: ThrottleUiState,
     connection: ConnectionState,
     scale: DriveScale? = null,
+    localFunctionLabels: Map<Int, String> = emptyMap(),
 ): DriveUiState {
     val link = mapLink(throttle.link, connection)
     val attempt = throttle.reconnectAttempt ?: (connection as? ConnectionState.Reconnecting)?.attempt
+    val slot = throttle.slots.lastOrNull { it.desired } ?: throttle.slots.lastOrNull()
     return DriveUiState(
         layoutName = connection.targetName(),
         link = link,
         reconnectAttempt = attempt,
-        loco = throttle.slots.firstOrNull()?.toDriveLoco(),
+        loco = slot?.toDriveLoco(localFunctionLabels),
         scale = scale,
         trackPowerOn = throttle.trackPowerOn,
     )
@@ -62,7 +64,7 @@ private fun ConnectionState.targetName(): String? = when (this) {
     ConnectionState.Disconnected -> null
 }
 
-private fun ThrottleSlotUiState.toDriveLoco(): DriveLoco = DriveLoco(
+private fun ThrottleSlotUiState.toDriveLoco(localFunctionLabels: Map<Int, String>): DriveLoco = DriveLoco(
     address = addressDisplay,
     name = displayName,
     speedStepCount = speedSteps.steps,
@@ -72,7 +74,7 @@ private fun ThrottleSlotUiState.toDriveLoco(): DriveLoco = DriveLoco(
     functions = functions.map { function ->
         DriveFunction(
             number = function.number,
-            label = function.label,
+            label = localFunctionLabels[function.number]?.takeIf { it.isNotBlank() } ?: function.label,
             isOn = function.isOn,
             isMomentary = function.isMomentary,
             isEnabled = function.isEnabled,

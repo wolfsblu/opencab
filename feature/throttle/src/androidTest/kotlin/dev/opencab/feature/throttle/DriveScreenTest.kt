@@ -1,5 +1,8 @@
 package dev.opencab.feature.throttle
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -7,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -16,8 +20,8 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.test.waitUntilAtLeastOneExists
+import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dev.opencab.core.designsystem.theme.CabTheme
 import org.junit.Assert.assertEquals
@@ -42,9 +46,9 @@ class DriveScreenTest {
         }
     }
 
-    private fun expandFunctionsIfCollapsed() {
-        if (composeRule.onAllNodesWithTag(DriveTestTags.FUNCTIONS_TOGGLE).fetchSemanticsNodes().isNotEmpty()) {
-            composeRule.onNodeWithTag(DriveTestTags.FUNCTIONS_TOGGLE).performClick()
+    private fun openFunctionsTab() {
+        if (composeRule.onAllNodesWithTag(DriveTestTags.FUNCTIONS_TAB).fetchSemanticsNodes().isNotEmpty()) {
+            composeRule.onNodeWithTag(DriveTestTags.FUNCTIONS_TAB).performClick()
         }
     }
 
@@ -55,16 +59,6 @@ class DriveScreenTest {
         composeRule.onNodeWithTag(DriveTestTags.SCREEN).assertIsDisplayed()
         composeRule.onNodeWithTag(DriveTestTags.STEP).assertTextEquals("42")
         composeRule.onNodeWithTag(DriveTestTags.STOP).assertIsDisplayed().assertIsEnabled()
-    }
-
-    @Test
-    fun nudgeButtonsRequestExactlyOneStep() {
-        setContent(DrivePreviewData.connected())
-
-        composeRule.onNodeWithTag(DriveTestTags.NUDGE_UP).performClick()
-        composeRule.onNodeWithTag(DriveTestTags.NUDGE_DOWN).performClick()
-
-        assertEquals(listOf(1, -1), actions.nudges)
     }
 
     @Test
@@ -84,9 +78,18 @@ class DriveScreenTest {
     fun draggingTheHandleSendsAThrottleValue() {
         setContent(DrivePreviewData.connected())
 
-        composeRule.onNodeWithTag(DriveTestTags.HANDLE).performTouchInput { swipeUp() }
+        val handle = composeRule.onNodeWithTag(DriveTestTags.HANDLE).getUnclippedBoundsInRoot()
+        val lever = composeRule.onNodeWithTag(DriveTestTags.LEVER).getUnclippedBoundsInRoot()
+        composeRule.onNodeWithTag(DriveTestTags.HANDLE).performTouchInput {
+            down(center)
+            moveBy(Offset(0f, -80f))
+            up()
+        }
 
-        assertTrue(actions.speeds.isNotEmpty())
+        assertTrue(
+            "handle=$handle lever=$lever speeds=${actions.speeds}",
+            actions.speeds.isNotEmpty(),
+        )
     }
 
     @Test
@@ -116,7 +119,7 @@ class DriveScreenTest {
 
         composeRule.onNodeWithTag(DriveTestTags.BANNER).assertIsDisplayed()
         composeRule.onNodeWithText("Reconnecting… (attempt 3)", substring = true).assertIsDisplayed()
-        composeRule.onNodeWithTag(DriveTestTags.NUDGE_UP).assertIsNotEnabled()
+        composeRule.onNodeWithTag(DriveTestTags.DIRECTION).assertIsNotEnabled()
         composeRule.onNodeWithTag(DriveTestTags.STOP).assertIsDisplayed()
     }
 
@@ -171,10 +174,27 @@ class DriveScreenTest {
     @Test
     fun activeAndMomentaryFunctionsAreExposed() {
         setContent(DrivePreviewData.activeFunctions())
-        expandFunctionsIfCollapsed()
+        openFunctionsTab()
 
         composeRule.onNodeWithContentDescription("Function 0, Headlight").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Function 2, Bell").assertIsDisplayed()
+    }
+
+    @Test
+    fun functionsTabKeepsTheControlDeckPinnedAndHidesTheLever() {
+        setContent(DrivePreviewData.connected())
+
+        composeRule.onNodeWithTag(DriveTestTags.FUNCTIONS_TAB).performClick()
+
+        composeRule.onNodeWithTag(DriveTestTags.FUNCTIONS).assertIsDisplayed()
+        composeRule.onNodeWithTag(DriveTestTags.STOP).assertIsDisplayed().assertIsEnabled()
+        composeRule.onNodeWithTag(DriveTestTags.DIRECTION).assertIsDisplayed()
+        composeRule.onNodeWithTag(DriveTestTags.LEVER).assertDoesNotExist()
+
+        composeRule.onNodeWithTag(DriveTestTags.THROTTLE_TAB).performClick()
+
+        composeRule.onNodeWithTag(DriveTestTags.LEVER).assertIsDisplayed()
+        composeRule.onNodeWithTag(DriveTestTags.CONTROL_DECK).assertIsDisplayed()
     }
 
     @Test
@@ -189,7 +209,7 @@ class DriveScreenTest {
             )
         }
         setContent(momentary)
-        expandFunctionsIfCollapsed()
+        openFunctionsTab()
 
         composeRule.onNodeWithTag(DriveTestTags.function(2)).performTouchInput {
             down(center)
@@ -210,9 +230,47 @@ class DriveScreenTest {
             .assertIsDisplayed()
     }
 
+    @Test
+    fun controlDeckStaysInsideTheThrottleAssembly() {
+        setContent(DrivePreviewData.connected())
+
+        val panel = composeRule.onNodeWithTag(DriveTestTags.LEVER_PANEL).getUnclippedBoundsInRoot()
+        val deck = composeRule.onNodeWithTag(DriveTestTags.CONTROL_DECK).getUnclippedBoundsInRoot()
+        val direction = composeRule.onNodeWithTag(DriveTestTags.DIRECTION).getUnclippedBoundsInRoot()
+        val stop = composeRule.onNodeWithTag(DriveTestTags.STOP).getUnclippedBoundsInRoot()
+
+        assertTrue(deck.left >= panel.left && deck.right <= panel.right)
+        assertTrue(direction.left >= deck.left && stop.right <= deck.right)
+        assertTrue(stop.left > direction.right)
+        assertTrue(direction.bottom - direction.top >= 64.dp)
+        assertTrue(stop.bottom - stop.top >= 64.dp)
+    }
+
+    @Test
+    fun landscapeAssemblyStacksControlsUnderReadoutAndSpansLeverHeight() {
+        composeRule.setContent {
+            CabTheme {
+                Box(Modifier.requiredSize(width = 900.dp, height = 420.dp)) {
+                    DriveScreen(uiState = DrivePreviewData.connected(), actions = actions)
+                }
+            }
+        }
+
+        val panel = composeRule.onNodeWithTag(DriveTestTags.LEVER_PANEL).getUnclippedBoundsInRoot()
+        val readout = composeRule.onNodeWithTag(DriveTestTags.READOUT).getUnclippedBoundsInRoot()
+        val deck = composeRule.onNodeWithTag(DriveTestTags.CONTROL_DECK).getUnclippedBoundsInRoot()
+        val lever = composeRule.onNodeWithTag(DriveTestTags.LEVER).getUnclippedBoundsInRoot()
+
+        assertTrue(deck.top >= readout.bottom)
+        assertTrue(lever.left >= deck.right)
+        assertTrue(
+            "leverHeight=${lever.bottom - lever.top} panelHeight=${panel.bottom - panel.top}",
+            lever.bottom - lever.top >= (panel.bottom - panel.top) - 32.dp,
+        )
+    }
+
     private class RecordingActions : DriveActions {
         val speeds = mutableListOf<Float>()
-        val nudges = mutableListOf<Int>()
         val holdStarts = mutableListOf<Int>()
         val holdEnds = mutableListOf<Int>()
         val directions = mutableListOf<DriveDirection>()
@@ -223,10 +281,6 @@ class DriveScreenTest {
 
         override fun onSpeedChanged(speed: Float) {
             speeds += speed
-        }
-
-        override fun onNudge(steps: Int) {
-            nudges += steps
         }
 
         override fun onStop() {

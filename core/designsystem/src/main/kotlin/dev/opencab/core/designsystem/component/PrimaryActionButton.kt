@@ -67,8 +67,8 @@ fun PrimaryActionButton(
 
             PrimaryActionTone.Destructive ->
                 ButtonDefaults.buttonColors(
-                    containerColor = CabTheme.colorScheme.error,
-                    contentColor = CabTheme.colorScheme.onError,
+                    containerColor = CabTheme.extendedColors.stop,
+                    contentColor = CabTheme.extendedColors.onStop,
                 )
         }
     Button(

@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -11,6 +13,7 @@ android {
 
     defaultConfig {
         minSdk = 26
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
@@ -37,9 +40,17 @@ kotlin {
 
 dependencies {
     implementation(project(":core:designsystem"))
+    implementation(project(":core:model"))
+    implementation(project(":core:data"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.hilt.lifecycle.viewmodel.compose)
+    implementation(libs.kotlinx.coroutines.android)
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
 
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
@@ -49,6 +60,23 @@ dependencies {
     implementation(libs.compose.ui.tooling.preview)
 
     debugImplementation(libs.compose.ui.tooling)
+    debugImplementation(libs.compose.ui.test.manifest)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation(project(":core:protocol"))
+
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.espresso.core)
+
+    constraints {
+        // Workaround: Espresso 3.7.0 and Compose UI Test pull
+        // error_prone_annotations:2.30.0, which CI cannot resolve. This constraint
+        // should be removable once those dependencies stop requesting 2.30.0.
+        androidTestImplementation(libs.errorprone.annotations)
+    }
 }

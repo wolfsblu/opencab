@@ -5,6 +5,7 @@ import dev.opencab.core.designsystem.preview.CabPreview
 import dev.opencab.core.designsystem.theme.CabTheme
 
 /** Deterministic states used by previews and screenshot tooling. */
+@Suppress("TooManyFunctions")
 internal object DrivePreviewData {
     fun connected(): DriveUiState = DriveUiState(
         layoutName = "Junction Yard",
@@ -32,6 +33,13 @@ internal object DrivePreviewData {
             health = DriveHealth.Stale,
             canControl = false,
         ),
+    )
+
+    fun stopped(): DriveUiState = DriveUiState(
+        layoutName = "Junction Yard",
+        link = DriveLink.Connected,
+        loco = loco(speedStep = 0),
+        scale = DriveScale(maxScaleSpeed = 128),
     )
 
     fun inUse(): DriveUiState = DriveUiState(
@@ -164,6 +172,14 @@ private fun DriveStalePreview() {
 
 @CabPreview
 @Composable
+private fun DriveStoppedPreview() {
+    CabTheme {
+        DriveScreen(uiState = DrivePreviewData.stopped())
+    }
+}
+
+@CabPreview
+@Composable
 private fun DriveInUsePreview() {
     CabTheme {
         DriveScreen(uiState = DrivePreviewData.inUse())
@@ -183,6 +199,17 @@ private fun DriveMaxSpeedPreview() {
 private fun DriveActiveFunctionsPreview() {
     CabTheme {
         DriveScreen(uiState = DrivePreviewData.activeFunctions())
+    }
+}
+
+@CabPreview
+@Composable
+private fun DriveFunctionsTabPreview() {
+    CabTheme {
+        DriveScreen(
+            uiState = DrivePreviewData.activeFunctions(),
+            initialTab = DriveInstrumentTab.Functions,
+        )
     }
 }
 

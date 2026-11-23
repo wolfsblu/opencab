@@ -1,26 +1,36 @@
 package dev.opencab.feature.throttle
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Surface
@@ -37,7 +47,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
@@ -63,6 +75,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.opencab.core.designsystem.theme.CabElevationLevel
@@ -101,8 +115,80 @@ internal class LeverState(
     }
 }
 
+/**
+ * The lever assembly: a recessed step readout, the physical lever rail, and the Direction/Stop
+ * control deck all share one instrument surface. The deck is deliberately part of the throttle
+ * rather than a toolbar floating beside it.
+ */
 @Composable
 internal fun DriveLeverPanel(
+    loco: DriveLoco,
+    enabled: Boolean,
+    scale: DriveScale?,
+    haptics: DriveHaptics,
+    actions: DriveActions,
+    onReverseRequest: (DriveDirection) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val lever = remember { LeverState(loco.speedStep, loco.speedStepCount) }
+    LaunchedEffect(loco.speedStep, loco.speedStepCount) {
+        lever.sync(loco.speedStep, loco.speedStepCount)
+    }
+    val performHaptic = rememberDriveHaptics(haptics)
+    AnnounceStepChanges(lever)
+
+    Surface(
+        modifier = modifier.fillMaxWidth().testTag(DriveTestTags.LEVER_PANEL),
+        shape = CabTheme.shapes.panel,
+        color = CabTheme.elevation.surfaceFor(
+            level = CabElevationLevel.Raised,
+            colorScheme = CabTheme.colorScheme,
+        ),
+        contentColor = CabTheme.colorScheme.onSurface,
+    ) {
+        BoxWithConstraints(
+            modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(horizontal = CabTheme.spacing.sm, vertical = CabTheme.spacing.sm),
+        ) {
+            val assembly =
+                LeverAssembly(
+                    loco = loco,
+                    lever = lever,
+                    enabled = enabled,
+                    scale = scale,
+                    haptics = haptics,
+                    actions = actions,
+                    onReverseRequest = onReverseRequest,
+                )
+            if (maxWidth > 700.dp || maxHeight > 700.dp) {
+                ConsoleLeverAssembly(state = assembly)
+            } else if (maxWidth > maxHeight * 1.15f) {
+                WideLeverAssembly(state = assembly)
+            } else {
+                TallLeverAssembly(state = assembly)
+            }
+        }
+    }
+}
+
+private data class LeverAssembly(
+    val loco: DriveLoco,
+    val lever: LeverState,
+    val enabled: Boolean,
+    val scale: DriveScale?,
+    val haptics: DriveHaptics,
+    val actions: DriveActions,
+    val onReverseRequest: (DriveDirection) -> Unit,
+)
+
+/**
+ * The readout + lever stage used by the portrait tabbed instrument. The control deck is composed
+ * separately and pinned below the tabs, so Stop and Direction remain available on every tab.
+ */
+@Composable
+internal fun DriveThrottleStage(
     loco: DriveLoco,
     enabled: Boolean,
     scale: DriveScale?,
@@ -116,41 +202,379 @@ internal fun DriveLeverPanel(
     }
     val performHaptic = rememberDriveHaptics(haptics)
     AnnounceStepChanges(lever)
-
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = CabTheme.shapes.panel,
-        color = CabTheme.elevation.surfaceFor(
-            level = CabElevationLevel.Raised,
-            colorScheme = CabTheme.colorScheme,
-        ),
-        contentColor = CabTheme.colorScheme.onSurface,
+    Row(
+        modifier = modifier.fillMaxSize(),
+        horizontalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
+        ReadoutWindow(
+            loco = loco,
+            lever = lever,
+            scale = scale,
+            enabled = enabled,
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+        )
+        ThrottleLever(
+            loco = loco,
+            lever = lever,
+            enabled = enabled,
+            actions = actions,
+            performHaptic = performHaptic,
+            modifier = Modifier.weight(0.82f).fillMaxHeight(),
+        )
+    }
+}
+
+/**
+ * Large-screen assembly: a capped readout and control deck form a centred console beside a lever
+ * that runs the full height of the instrument bay. This prevents the readout from stretching into
+ * a mostly empty window on tablets.
+ */
+@Composable
+private fun ConsoleLeverAssembly(
+    state: LeverAssembly,
+    modifier: Modifier = Modifier,
+) {
+    val performHaptic = rememberDriveHaptics(state.haptics)
+    Row(
+        modifier = modifier.fillMaxSize(),
+        horizontalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+            verticalArrangement = Arrangement.Center,
+        ) {
+            ReadoutWindow(
+                loco = state.loco,
+                lever = state.lever,
+                scale = state.scale,
+                enabled = state.enabled,
+                modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 480.dp)
+                    .fillMaxHeight(),
+            )
+            Spacer(Modifier.height(CabTheme.spacing.sm))
+            DriveControlDeck(
+                loco = state.loco,
+                enabled = state.enabled,
+                haptics = state.haptics,
+                actions = state.actions,
+                onReverseRequest = state.onReverseRequest,
+                modifier = Modifier.fillMaxWidth().testTag(DriveTestTags.CONTROL_DECK),
+            )
+        }
+        ThrottleLever(
+            loco = state.loco,
+            lever = state.lever,
+            enabled = state.enabled,
+            actions = state.actions,
+            performHaptic = performHaptic,
+            modifier = Modifier.weight(0.82f).fillMaxHeight(),
+        )
+    }
+}
+
+/**
+ * Landscape/tablet assembly: the readout and the control deck form the left stack while the lever
+ * runs the full height of the instrument bay.
+ */
+@Composable
+private fun WideLeverAssembly(
+    state: LeverAssembly,
+    modifier: Modifier = Modifier,
+) {
+    val performHaptic = rememberDriveHaptics(state.haptics)
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val spacing = CabTheme.spacing.sm
+        val leftWidth = (maxWidth * 0.56f).coerceAtMost(520.dp)
+        val leverWidth = (maxWidth - leftWidth - spacing).coerceAtMost(420.dp)
         Row(
-            modifier = Modifier.fillMaxSize().padding(CabTheme.spacing.md),
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.width(leftWidth).fillMaxHeight()) {
+                ReadoutWindow(
+                    loco = state.loco,
+                    lever = state.lever,
+                    scale = state.scale,
+                    enabled = state.enabled,
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                )
+                Spacer(Modifier.height(CabTheme.spacing.sm))
+                DriveControlDeck(
+                    loco = state.loco,
+                    enabled = state.enabled,
+                    haptics = state.haptics,
+                    actions = state.actions,
+                    onReverseRequest = state.onReverseRequest,
+                    modifier = Modifier.fillMaxWidth().testTag(DriveTestTags.CONTROL_DECK),
+                )
+            }
+            Spacer(Modifier.width(spacing))
+            ThrottleLever(
+                loco = state.loco,
+                lever = state.lever,
+                enabled = state.enabled,
+                actions = state.actions,
+                performHaptic = performHaptic,
+                modifier = Modifier.width(leverWidth).fillMaxHeight(),
+            )
+        }
+    }
+}
+
+/** Portrait assembly: the readout and lever share the top row; the control deck spans below. */
+@Composable
+private fun TallLeverAssembly(
+    state: LeverAssembly,
+    modifier: Modifier = Modifier,
+) {
+    val performHaptic = rememberDriveHaptics(state.haptics)
+    Column(modifier = modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier.weight(1f).fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            SpeedReadout(
-                loco = loco,
-                lever = lever,
-                scale = scale,
-                enabled = enabled,
-                modifier = Modifier.weight(1f),
+            ReadoutWindow(
+                loco = state.loco,
+                lever = state.lever,
+                scale = state.scale,
+                enabled = state.enabled,
+                modifier = Modifier.weight(1f).fillMaxHeight(),
             )
             ThrottleLever(
-                loco = loco,
-                lever = lever,
-                enabled = enabled,
-                actions = actions,
+                loco = state.loco,
+                lever = state.lever,
+                enabled = state.enabled,
+                actions = state.actions,
                 performHaptic = performHaptic,
-                modifier = Modifier.weight(0.8f).widthIn(min = 96.dp, max = 168.dp).fillMaxHeight(),
+                modifier = Modifier.weight(0.82f).fillMaxHeight(),
             )
-            NudgeButtons(
-                enabled = enabled,
-                lever = lever,
-                actions = actions,
-                performHaptic = performHaptic,
+        }
+        Spacer(Modifier.height(CabTheme.spacing.sm))
+        HorizontalDivider(color = CabTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        Spacer(Modifier.height(CabTheme.spacing.sm))
+        DriveControlDeck(
+            loco = state.loco,
+            enabled = state.enabled,
+            haptics = state.haptics,
+            actions = state.actions,
+            onReverseRequest = state.onReverseRequest,
+            modifier = Modifier.fillMaxWidth().testTag(DriveTestTags.CONTROL_DECK),
+        )
+    }
+}
+
+@Composable
+private fun ReadoutWindow(
+    loco: DriveLoco,
+    lever: LeverState,
+    scale: DriveScale?,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val shape = CabTheme.shapes.medium
+    Surface(
+        modifier =
+        modifier
+            .testTag(DriveTestTags.READOUT)
+            .border(
+                width = 1.dp,
+                color = CabTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                shape = shape,
+            ),
+        shape = shape,
+        color = CabTheme.colorScheme.surfaceContainerLowest,
+        contentColor = CabTheme.colorScheme.onSurface,
+    ) {
+        SpeedReadout(
+            loco = loco,
+            lever = lever,
+            scale = scale,
+            enabled = enabled,
+            modifier = Modifier.fillMaxSize().padding(CabTheme.spacing.md),
+        )
+    }
+}
+
+@Composable
+internal fun DriveControlDeck(
+    loco: DriveLoco,
+    enabled: Boolean,
+    haptics: DriveHaptics,
+    actions: DriveActions,
+    onReverseRequest: (DriveDirection) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val performHaptic = rememberDriveHaptics(haptics)
+    val target =
+        if (loco.direction == DriveDirection.Forward) {
+            DriveDirection.Reverse
+        } else {
+            DriveDirection.Forward
+        }
+    val stopDescription =
+        stringResource(R.string.drive_stop_description, loco.speedStep, loco.speedStepCount)
+    Row(
+        modifier = modifier.height(CabTheme.sizing.controlDeck),
+        horizontalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm),
+    ) {
+        DirectionKey(
+            direction = loco.direction,
+            enabled = enabled,
+            onClick = {
+                if (loco.isMoving) {
+                    onReverseRequest(target)
+                } else {
+                    performHaptic(DriveHapticToken.Confirm)
+                    actions.onDirectionChange(target)
+                }
+            },
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+        )
+        StopKey(
+            loco = loco,
+            description = stopDescription,
+            onClick = {
+                performHaptic(DriveHapticToken.Confirm)
+                actions.onStop()
+            },
+            modifier = Modifier.weight(1f).fillMaxHeight(),
+        )
+    }
+}
+
+@Composable
+private fun DirectionKey(
+    direction: DriveDirection,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val label = stringResource(
+        if (direction == DriveDirection.Forward) {
+            R.string.drive_direction_short_forward
+        } else {
+            R.string.drive_direction_short_reverse
+        },
+    )
+    val directionState = stringResource(R.string.drive_direction_state, directionLabel(direction))
+    val directionDescription = stringResource(R.string.drive_direction)
+    val shape = CabTheme.shapes.control
+    val contentColor =
+        if (enabled) {
+            CabTheme.colorScheme.onSurface
+        } else {
+            CabTheme.extendedColors.disabledContent
+        }
+    val borderColor =
+        if (enabled) {
+            CabTheme.colorScheme.outlineVariant
+        } else {
+            CabTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
+        }
+    Surface(
+        onClick = onClick,
+        enabled = enabled,
+        modifier =
+        modifier
+            .testTag(DriveTestTags.DIRECTION)
+            .border(width = 1.dp, color = borderColor, shape = shape)
+            .semantics {
+                contentDescription = directionDescription
+                stateDescription = directionState
+            },
+        shape = shape,
+        color =
+        if (enabled) {
+            CabTheme.colorScheme.surfaceContainerHigh
+        } else {
+            CabTheme.colorScheme.surfaceContainerLow
+        },
+        contentColor = contentColor,
+    ) {
+        Row(
+            modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(horizontal = CabTheme.spacing.sm, vertical = CabTheme.spacing.xs),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector =
+                if (direction == DriveDirection.Forward) {
+                    Icons.Filled.KeyboardArrowUp
+                } else {
+                    Icons.Filled.KeyboardArrowDown
+                },
+                contentDescription = null,
+                modifier = Modifier.size(CabTheme.sizing.iconMedium),
+                tint = if (enabled) CabTheme.colorScheme.primary else contentColor,
+            )
+            Spacer(Modifier.width(CabTheme.spacing.xxs))
+            Text(
+                text = label.uppercase(),
+                style = CabTheme.typography.sectionTitle,
+                color = contentColor,
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(minFontSize = 10.sp, maxFontSize = 20.sp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun StopKey(
+    loco: DriveLoco,
+    description: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val enabled = loco.issue != DriveIssue.InUse
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier =
+        modifier
+            .testTag(DriveTestTags.STOP)
+            .semantics { stateDescription = description },
+        shape = CabTheme.shapes.control,
+        colors =
+        ButtonDefaults.buttonColors(
+            containerColor = CabTheme.extendedColors.stop,
+            contentColor = CabTheme.extendedColors.onStop,
+            disabledContainerColor = CabTheme.colorScheme.surfaceContainerHighest,
+            disabledContentColor = CabTheme.extendedColors.disabledContent,
+        ),
+        contentPadding =
+        PaddingValues(
+            horizontal = CabTheme.spacing.md,
+            vertical = CabTheme.spacing.sm,
+        ),
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier =
+                Modifier
+                    .size(12.dp)
+                    .background(LocalContentColor.current, CabTheme.shapes.indicator),
+            )
+            Spacer(Modifier.width(CabTheme.spacing.sm))
+            Text(
+                text = stringResource(R.string.drive_stop_short),
+                style = CabTheme.typography.sectionTitle,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(minFontSize = 12.sp, maxFontSize = 24.sp),
             )
         }
     }
@@ -166,82 +590,133 @@ private fun SpeedReadout(
 ) {
     val directionLabel = directionLabel(loco.direction)
     val stale = loco.health == DriveHealth.Stale
-    Column(
-        modifier = modifier.fillMaxHeight(),
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Text(
-            text = stringResource(R.string.drive_step_value, lever.step),
-            style = CabTheme.typography.speedValue,
-            color = if (enabled) CabTheme.colorScheme.onSurface else CabTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            softWrap = false,
-            autoSize = TextAutoSize.StepBased(minFontSize = 32.sp, maxFontSize = 104.sp),
-            modifier = Modifier.testTag(DriveTestTags.STEP),
-        )
-        Text(
-            text = stringResource(R.string.drive_step_total, lever.stepCount),
-            style = CabTheme.typography.speedUnit,
-            color = CabTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(CabTheme.spacing.xs))
-        DirectionReadout(loco.direction, directionLabel, stale)
-        if (loco.speedStep == loco.speedStepCount) {
-            Spacer(Modifier.height(CabTheme.spacing.xs))
-            MaxBadge()
-        }
-        if (stale) {
-            Spacer(Modifier.height(CabTheme.spacing.xs))
-            Text(
-                text = stringResource(R.string.drive_last_known),
-                style = CabTheme.typography.speedCaption,
-                color = CabTheme.extendedColors.caution,
-            )
-        }
-        if (scale != null) {
-            Spacer(Modifier.height(CabTheme.spacing.md))
-            EstimatedSpeed(scale, lever.step.toFloat() / lever.stepCount)
+    BoxWithConstraints(modifier = modifier) {
+        val showStepLabel = maxHeight >= 260.dp
+        val estimateScale = scale?.takeIf { maxHeight >= 300.dp }
+        val showStale = stale && maxHeight >= 240.dp
+        val density = LocalDensity.current
+        val numberMax =
+            with(density) {
+                (maxHeight * 0.38f).coerceIn(40.dp, 112.dp).toSp()
+            }
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = if (estimateScale != null) Arrangement.SpaceBetween else Arrangement.Center,
+        ) {
+            Column {
+                if (showStepLabel) {
+                    Text(
+                        text = stringResource(R.string.drive_step_label),
+                        style = CabTheme.typography.speedCaption,
+                        color = CabTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.drive_step_value, lever.step),
+                    style = CabTheme.typography.speedValue,
+                    color =
+                    if (enabled) {
+                        CabTheme.colorScheme.onSurface
+                    } else {
+                        CabTheme.extendedColors.disabledContent
+                    },
+                    maxLines = 1,
+                    softWrap = false,
+                    autoSize = TextAutoSize.StepBased(minFontSize = 24.sp, maxFontSize = numberMax),
+                    modifier = Modifier.testTag(DriveTestTags.STEP),
+                )
+                Text(
+                    text = stringResource(R.string.drive_step_total, lever.stepCount),
+                    style = CabTheme.typography.speedUnit,
+                    color = CabTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(CabTheme.spacing.xs))
+                DirectionBadge(direction = loco.direction, label = directionLabel, stale = stale)
+                if (loco.speedStep == loco.speedStepCount) {
+                    Spacer(Modifier.height(CabTheme.spacing.xxs))
+                    MaxBadge()
+                }
+                if (showStale) {
+                    Spacer(Modifier.height(CabTheme.spacing.xs))
+                    Text(
+                        text = stringResource(R.string.drive_last_known),
+                        style = CabTheme.typography.speedCaption,
+                        color = CabTheme.extendedColors.caution,
+                    )
+                }
+            }
+            if (estimateScale != null) {
+                EstimatedSpeed(estimateScale, lever.step.toFloat() / lever.stepCount)
+            }
         }
     }
 }
 
 @Composable
-private fun DirectionReadout(
+private fun DirectionBadge(
     direction: DriveDirection,
     label: String,
     stale: Boolean,
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            imageVector =
-            if (direction == DriveDirection.Forward) {
-                Icons.Filled.KeyboardArrowUp
-            } else {
-                Icons.Filled.KeyboardArrowDown
-            },
-            contentDescription = null,
-            modifier = Modifier.size(CabTheme.sizing.iconMedium),
-            tint = if (stale) CabTheme.extendedColors.caution else CabTheme.colorScheme.primary,
-        )
-        Spacer(Modifier.width(CabTheme.spacing.xxs))
-        Text(
-            text = label.uppercase(),
-            style = CabTheme.typography.status,
-            color = if (stale) CabTheme.colorScheme.onSurfaceVariant else CabTheme.colorScheme.onSurface,
-        )
+    Surface(
+        shape = CabTheme.shapes.small,
+        color =
+        if (stale) {
+            CabTheme.colorScheme.surfaceContainerHigh
+        } else {
+            CabTheme.colorScheme.primaryContainer
+        },
+        contentColor =
+        if (stale) {
+            CabTheme.colorScheme.onSurfaceVariant
+        } else {
+            CabTheme.colorScheme.onPrimaryContainer
+        },
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = CabTheme.spacing.xs, vertical = CabTheme.spacing.xxs),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector =
+                if (direction == DriveDirection.Forward) {
+                    Icons.Filled.KeyboardArrowUp
+                } else {
+                    Icons.Filled.KeyboardArrowDown
+                },
+                contentDescription = null,
+                modifier = Modifier.size(CabTheme.sizing.iconSmall),
+                tint = if (stale) CabTheme.colorScheme.onSurfaceVariant else CabTheme.colorScheme.primary,
+            )
+            Spacer(Modifier.width(CabTheme.spacing.xxs))
+            Text(
+                text = label.uppercase(),
+                style = CabTheme.typography.status,
+                color =
+                if (stale) {
+                    CabTheme.colorScheme.onSurfaceVariant
+                } else {
+                    CabTheme.colorScheme.onPrimaryContainer
+                },
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = 13.sp),
+            )
+        }
     }
 }
 
 @Composable
 private fun MaxBadge() {
     Surface(
-        shape = CabTheme.shapes.pill,
-        color = CabTheme.colorScheme.primaryContainer,
-        contentColor = CabTheme.colorScheme.onPrimaryContainer,
+        shape = CabTheme.shapes.small,
+        color = CabTheme.colorScheme.tertiaryContainer,
+        contentColor = CabTheme.colorScheme.onTertiaryContainer,
     ) {
         Text(
             text = stringResource(R.string.drive_max),
             style = CabTheme.typography.status,
+            maxLines = 1,
+            softWrap = false,
             modifier = Modifier.padding(horizontal = CabTheme.spacing.xs, vertical = 2.dp),
         )
     }
@@ -266,20 +741,27 @@ private fun EstimatedSpeed(scale: DriveScale, fraction: Float) {
     }
     val description =
         stringResource(R.string.drive_estimate_description, estimated, unitDescription)
-    Text(
-        text = text,
-        style = CabTheme.typography.speedCaption,
-        color = CabTheme.colorScheme.onSurfaceVariant,
-        modifier =
-        Modifier
-            .testTag(DriveTestTags.ESTIMATE)
-            .semanticsDescription(description),
-    )
-    Text(
-        text = stringResource(R.string.drive_scale_caption),
-        style = CabTheme.typography.speedCaption,
-        color = CabTheme.colorScheme.onSurfaceVariant,
-    )
+    Column {
+        HorizontalDivider(color = CabTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+        Spacer(Modifier.height(CabTheme.spacing.sm))
+        Text(
+            text = text,
+            style = CabTheme.typography.speedCaption,
+            color = CabTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = 13.sp),
+            modifier =
+            Modifier
+                .testTag(DriveTestTags.ESTIMATE)
+                .semanticsDescription(description),
+        )
+        Text(
+            text = stringResource(R.string.drive_scale_caption),
+            style = CabTheme.typography.speedCaption,
+            color = CabTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
+            maxLines = 2,
+        )
+    }
 }
 
 private fun Modifier.semanticsDescription(
@@ -305,8 +787,14 @@ private fun ThrottleLever(
 ) {
     val density = LocalDensity.current
     var heightPx by remember { mutableIntStateOf(0) }
-    val handleHeightPx = with(density) { 56.dp.toPx() }
+    val handleHeight = CabTheme.sizing.leverHandleHeight
+    val handleHeightPx = with(density) { handleHeight.toPx() }
     val travel = (heightPx - handleHeightPx).coerceAtLeast(1f)
+    val handleScale by animateFloatAsState(
+        targetValue = if (lever.dragging) 1.035f else 1f,
+        animationSpec = CabTheme.motion.pressFeedback,
+        label = "leverHandleScale",
+    )
     val labels = LeverLabels(
         description = stringResource(R.string.drive_lever_description),
         state = stringResource(
@@ -320,7 +808,7 @@ private fun ThrottleLever(
         reverse = stringResource(R.string.drive_reverse),
     )
 
-    Box(
+    BoxWithConstraints(
         modifier =
         modifier
             .onSizeChanged { heightPx = it.height }
@@ -330,21 +818,36 @@ private fun ThrottleLever(
             .leverSemantics(lever, enabled, labels, actions, performHaptic),
         contentAlignment = Alignment.TopCenter,
     ) {
-        LeverTrack(
-            fraction = lever.fraction,
-            handleHeightPx = handleHeightPx,
-            enabled = enabled,
-        )
-        LeverHandle(
-            enabled = enabled,
-            modifier =
-            Modifier
-                .testTag(DriveTestTags.HANDLE)
-                .graphicsLayer {
-                    translationY = (1f - lever.fraction) * travel
-                }
-                .leverDrag(lever, enabled, travel, actions, performHaptic),
-        )
+        val handleWidth =
+            (maxWidth - 8.dp)
+                .coerceAtMost(CabTheme.sizing.leverHandleWidth)
+                .coerceAtLeast(48.dp)
+        Box(modifier = Modifier.fillMaxSize()) {
+            LeverTrack(
+                fraction = lever.fraction,
+                handleHeightPx = handleHeightPx,
+                enabled = enabled,
+            )
+            LeverHandle(
+                enabled = enabled,
+                width = handleWidth,
+                modifier =
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .offset {
+                        IntOffset(
+                            x = 0,
+                            y = ((1f - lever.fraction) * travel).roundToInt(),
+                        )
+                    }
+                    .testTag(DriveTestTags.HANDLE)
+                    .graphicsLayer {
+                        scaleX = handleScale
+                        scaleY = handleScale
+                    }
+                    .leverDrag(lever, enabled, travel, actions, performHaptic),
+            )
+        }
     }
 }
 
@@ -463,50 +966,84 @@ private fun LeverTrack(
     handleHeightPx: Float,
     enabled: Boolean,
 ) {
-    val trackColor = CabTheme.colorScheme.surfaceVariant
-    val activeColor = if (enabled) CabTheme.colorScheme.primary else CabTheme.colorScheme.outline
-    val tickColor = CabTheme.colorScheme.outlineVariant
+    val colors = CabTheme.colorScheme
+    val trackColor = colors.surfaceContainerHighest
+    val activeColor = if (enabled) colors.primary else colors.outline
+    val tickColor = if (enabled) colors.outline else colors.outlineVariant
+    val railWidth = CabTheme.sizing.leverTrackWidth
     Canvas(Modifier.fillMaxSize()) {
         val centerX = size.width / 2f
-        val top = handleHeightPx / 2f
-        val bottom = size.height - handleHeightPx / 2f
-        val stroke = 10.dp.toPx()
-        drawLine(
+        val handleTop = handleHeightPx / 2f
+        val handleBottom = size.height - handleHeightPx / 2f
+        val railPx = railWidth.toPx()
+        val left = centerX - railPx / 2f
+        val corner = CornerRadius(railPx / 2f, railPx / 2f)
+
+        drawRoundRect(
             color = trackColor,
-            start = Offset(centerX, top),
-            end = Offset(centerX, bottom),
-            strokeWidth = stroke,
-            cap = StrokeCap.Round,
+            topLeft = Offset(left, 0f),
+            size = Size(railPx, size.height),
+            cornerRadius = corner,
         )
-        val handleCenter = bottom - (bottom - top) * fraction
-        drawLine(
-            color = activeColor,
-            start = Offset(centerX, handleCenter),
-            end = Offset(centerX, bottom),
-            strokeWidth = stroke,
-            cap = StrokeCap.Round,
-        )
-        listOf(0f, 0.25f, 0.5f, 0.75f, 1f).forEach { tick ->
-            val y = bottom - (bottom - top) * tick
+
+        val handleCenter = handleBottom - (handleBottom - handleTop) * fraction
+        if (handleCenter < size.height - 1f) {
             drawLine(
-                color = tickColor,
-                start = Offset(centerX - 16.dp.toPx(), y),
-                end = Offset(centerX - 8.dp.toPx(), y),
-                strokeWidth = 2.dp.toPx(),
+                color = activeColor,
+                start = Offset(centerX, handleCenter),
+                end = Offset(centerX, size.height - railPx / 2f),
+                strokeWidth = railPx - 6.dp.toPx(),
                 cap = StrokeCap.Round,
             )
         }
+
+        drawLine(
+            color = colors.outlineVariant.copy(alpha = 0.65f),
+            start = Offset(centerX, railPx / 2f),
+            end = Offset(centerX, size.height - railPx / 2f),
+            strokeWidth = 1.dp.toPx(),
+        )
+
+        for (index in 0..8) {
+            val y = handleBottom - (handleBottom - handleTop) * index / 8f
+            val major = index % 2 == 0
+            val length = if (major) 14.dp.toPx() else 8.dp.toPx()
+            drawLine(
+                color = tickColor,
+                start = Offset(left - 5.dp.toPx(), y),
+                end = Offset(left - 5.dp.toPx() - length, y),
+                strokeWidth = if (major) 2.dp.toPx() else 1.dp.toPx(),
+                cap = StrokeCap.Round,
+            )
+        }
+
+        drawLine(
+            color = tickColor,
+            start = Offset(left - 2.dp.toPx(), 0f),
+            end = Offset(left + railPx + 2.dp.toPx(), 0f),
+            strokeWidth = 2.dp.toPx(),
+            cap = StrokeCap.Round,
+        )
+        drawLine(
+            color = tickColor,
+            start = Offset(left - 2.dp.toPx(), size.height),
+            end = Offset(left + railPx + 2.dp.toPx(), size.height),
+            strokeWidth = 2.dp.toPx(),
+            cap = StrokeCap.Round,
+        )
     }
 }
 
 @Composable
 private fun LeverHandle(
     enabled: Boolean,
+    width: Dp,
     modifier: Modifier = Modifier,
 ) {
+    val shape = CabTheme.shapes.control
     Surface(
-        modifier = modifier.width(96.dp).height(56.dp),
-        shape = CabTheme.shapes.control,
+        modifier = modifier.width(width).height(CabTheme.sizing.leverHandleHeight),
+        shape = shape,
         color =
         if (enabled) {
             CabTheme.colorScheme.primary
@@ -519,107 +1056,31 @@ private fun LeverHandle(
         } else {
             CabTheme.colorScheme.onSurfaceVariant
         },
-        shadowElevation = 2.dp,
+        border =
+        BorderStroke(
+            width = 1.dp,
+            color =
+            if (enabled) {
+                CabTheme.colorScheme.primary
+            } else {
+                CabTheme.colorScheme.outlineVariant
+            },
+        ),
+        shadowElevation = CabTheme.elevation.shadowFor(CabElevationLevel.Raised),
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 repeat(3) {
                     Surface(
-                        modifier = Modifier.width(36.dp).height(2.dp),
+                        modifier = Modifier.width(42.dp).height(2.dp),
                         shape = CircleShape,
-                        color = LocalContentColor.current.copy(alpha = if (enabled) 0.8f else 0.4f),
+                        color = LocalContentColor.current.copy(alpha = if (enabled) 0.75f else 0.4f),
                     ) {}
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun NudgeButtons(
-    enabled: Boolean,
-    lever: LeverState,
-    actions: DriveActions,
-    performHaptic: (DriveHapticToken) -> Unit,
-) {
-    val upLabel = stringResource(R.string.drive_nudge_up)
-    val downLabel = stringResource(R.string.drive_nudge_down)
-    Column(
-        verticalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        NudgeButton(
-            label = stringResource(R.string.drive_nudge_up_short),
-            contentDescription = upLabel,
-            enabled = enabled,
-            onClick = {
-                actions.onNudge(1)
-                performHaptic(
-                    if (lever.step + 1 >= lever.stepCount) {
-                        DriveHapticToken.Limit
-                    } else {
-                        DriveHapticToken.Detent
-                    },
-                )
-            },
-            testTag = DriveTestTags.NUDGE_UP,
-        )
-        NudgeButton(
-            label = stringResource(R.string.drive_nudge_down_short),
-            contentDescription = downLabel,
-            enabled = enabled,
-            onClick = {
-                actions.onNudge(-1)
-                performHaptic(
-                    if (lever.step - 1 <= 0) {
-                        DriveHapticToken.Limit
-                    } else {
-                        DriveHapticToken.Detent
-                    },
-                )
-            },
-            testTag = DriveTestTags.NUDGE_DOWN,
-        )
-    }
-}
-
-@Composable
-private fun NudgeButton(
-    label: String,
-    contentDescription: String,
-    enabled: Boolean,
-    onClick: () -> Unit,
-    testTag: String,
-) {
-    Surface(
-        onClick = onClick,
-        enabled = enabled,
-        modifier =
-        Modifier
-            .size(56.dp)
-            .testTag(testTag)
-            .semantics { if (!enabled) disabled() },
-        shape = CabTheme.shapes.control,
-        color =
-        if (enabled) {
-            CabTheme.colorScheme.surfaceContainerHighest
-        } else {
-            CabTheme.colorScheme.surfaceContainerLow
-        },
-        contentColor =
-        if (enabled) {
-            CabTheme.colorScheme.onSurface
-        } else {
-            CabTheme.extendedColors.disabledContent
-        },
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                text = label,
-                style = CabTheme.typography.sectionTitle,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.semantics { this.contentDescription = contentDescription },
-            )
         }
     }
 }

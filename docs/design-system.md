@@ -57,6 +57,7 @@ roles. Signal colours are **outside** the dynamic palette so a generated theme c
 | `extendedColors.live` / `liveContainer` | Link is up |
 | `extendedColors.caution` / `cautionContainer` | Reconnecting or track power off |
 | `extendedColors.offline` / `offlineContainer` | Link is down |
+| `extendedColors.stop` / `onStop` | Destructive stop and release actions; stays red in dark mode |
 | `extendedColors.disabledContent` | Non-interactive readouts and keys |
 
 Colour is never the only carrier. `StatusPill`, `SpeedDisplay`, and `FunctionKey` all add an icon,
@@ -94,6 +95,9 @@ never animated; only the arc eases.
 | `touchSecondary` | 64 dp |
 | `touchPrimary` | 72 dp (upper bound for touch targets) |
 | `functionKey` | 56 dp |
+| `controlDeck` | 72 dp (Direction/Stop deck) |
+| `leverTrackWidth` | 16 dp |
+| `leverHandleWidth` / `leverHandleHeight` | 112 / 60 dp (adapts down on narrow bays) |
 | `speedArcCompact` / `speedArcMax` | 232 / 320 dp |
 | `contentMaxWidth` | 640 dp |
 
@@ -167,6 +171,14 @@ Haptics are gated by the caller's settings toggle and are never the only feedbac
 
 `SpeedDisplay` is presentation only. It accepts no drag input and has no command side effects;
 the interactive throttle will wrap it or replace the arc surface.
+
+The hero throttle assembly is feature-owned (`:feature:throttle`) because its drag, detents, and
+control deck are one interaction model. It composes only design-system tokens: tonal panel,
+`surfaceContainerLowest` readout window, `stop`/`onStop` for Stop, `controlDeck` and `lever*`
+sizing, tonal elevation, press-feedback motion, and the haptic vocabulary.
+
+`FunctionKey` off keys use the lowest tonal surface with a hairline border so a function grid stays
+quieter than the throttle. Active and momentary keys keep their filled tones.
 
 ### Semantics notes
 

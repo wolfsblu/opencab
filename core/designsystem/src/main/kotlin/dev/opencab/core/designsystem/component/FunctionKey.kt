@@ -152,9 +152,9 @@ private fun functionKeyColors(
 ): FunctionKeyColors = when (state) {
     FunctionKeyState.Off ->
         FunctionKeyColors(
-            container = colors.surfaceContainerLow,
+            container = colors.surfaceContainerLowest,
             content = colors.onSurface,
-            border = colors.outlineVariant,
+            border = colors.outlineVariant.copy(alpha = 0.55f),
         )
 
     FunctionKeyState.Active ->
@@ -173,9 +173,9 @@ private fun functionKeyColors(
 
     FunctionKeyState.Disabled ->
         FunctionKeyColors(
-            container = colors.surfaceContainerLow.copy(alpha = 0.5f),
+            container = colors.surfaceContainerLowest.copy(alpha = 0.5f),
             content = extended.disabledContent,
-            border = colors.outlineVariant.copy(alpha = 0.5f),
+            border = colors.outlineVariant.copy(alpha = 0.4f),
         )
 }
 

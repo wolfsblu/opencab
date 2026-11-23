@@ -2,6 +2,7 @@ package dev.opencab.core.data.throttle
 
 import dev.opencab.core.data.connection.DccClient
 import dev.opencab.core.model.ConnectionError
+import dev.opencab.core.model.ServerRosterEntry
 import dev.opencab.core.protocol.AddressType
 import dev.opencab.core.protocol.Direction
 import dev.opencab.core.protocol.LocoAddress
@@ -117,6 +118,10 @@ data class ThrottleSlotUiState(
     val addressDisplay: String
         get() = address.number.toString()
 
+    /** Stable `S3`/`L3412` key for matching a roster entry without importing protocol types. */
+    val addressKey: String
+        get() = (if (addressType == AddressType.LONG) "L" else "S") + address.number
+
     fun function(number: Int): ThrottleFunctionUiState? = functions.firstOrNull { it.number == number }
 }
 
@@ -127,6 +132,8 @@ data class ThrottleUiState(
     val linkError: ConnectionError? = null,
     val trackPower: TrackPowerState = TrackPowerState.UNKNOWN,
     val slots: List<ThrottleSlotUiState> = emptyList(),
+    /** Locomotives announced by the layout in its `RL` roster greeting. */
+    val serverRoster: List<ServerRosterEntry> = emptyList(),
     val lastAlert: String? = null,
 ) {
     val canControl: Boolean

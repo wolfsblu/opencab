@@ -207,6 +207,8 @@ data class CabExtendedColors(
     val offline: Color,
     val offlineContainer: Color,
     val onOfflineContainer: Color,
+    val stop: Color,
+    val onStop: Color,
     val disabledContent: Color,
 )
 
@@ -221,6 +223,8 @@ internal val LightExtendedColors: CabExtendedColors =
         offline = Color(0xFFB3261E),
         offlineContainer = Color(0xFFFFDAD6),
         onOfflineContainer = Color(0xFF410002),
+        stop = CabRedLight,
+        onStop = Color(0xFFFFFFFF),
         disabledContent = Color(0xFF6F767A),
     )
 
@@ -235,6 +239,8 @@ internal val DarkExtendedColors: CabExtendedColors =
         offline = Color(0xFFFFB4AB),
         offlineContainer = Color(0xFF93000A),
         onOfflineContainer = Color(0xFFFFDAD6),
+        stop = Color(0xFFB3261E),
+        onStop = Color(0xFFFFFFFF),
         disabledContent = Color(0xFF8A9297),
     )
 
@@ -249,6 +255,8 @@ internal val LightHighContrastExtendedColors: CabExtendedColors =
         offline = Color(0xFF8F0009),
         offlineContainer = Color(0xFFFFDAD6),
         onOfflineContainer = Color(0xFF000000),
+        stop = Color(0xFF8F0009),
+        onStop = Color(0xFFFFFFFF),
         disabledContent = Color(0xFF3A4246),
     )
 
@@ -263,5 +271,7 @@ internal val DarkHighContrastExtendedColors: CabExtendedColors =
         offline = Color(0xFFFFB4AB),
         offlineContainer = Color(0xFF6E0006),
         onOfflineContainer = Color(0xFFFFFFFF),
+        stop = Color(0xFFC62828),
+        onStop = Color(0xFFFFFFFF),
         disabledContent = Color(0xFFAEB6BA),
     )

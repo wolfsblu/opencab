@@ -21,8 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Warning
@@ -40,12 +38,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -62,8 +61,6 @@ import dev.opencab.core.designsystem.component.ConfirmSheet
 import dev.opencab.core.designsystem.component.EmptyState
 import dev.opencab.core.designsystem.component.InlineError
 import dev.opencab.core.designsystem.component.PrimaryActionButton
-import dev.opencab.core.designsystem.component.PrimaryActionSize
-import dev.opencab.core.designsystem.component.PrimaryActionTone
 import dev.opencab.core.designsystem.component.StatusPill
 import dev.opencab.core.designsystem.theme.CabTheme
 
@@ -111,6 +108,7 @@ fun DriveScreen(
     uiState: DriveUiState,
     modifier: Modifier = Modifier,
     actions: DriveActions = DriveActions.None,
+    initialTab: DriveInstrumentTab = DriveInstrumentTab.Throttle,
 ) {
     var releaseRequested by remember { mutableStateOf(false) }
     var reverseTarget by remember { mutableStateOf<DriveDirection?>(null) }
@@ -144,6 +142,7 @@ fun DriveScreen(
                 actions = actions,
                 onReleaseRequest = { releaseRequested = true },
                 onReverseRequest = { reverseTarget = it },
+                initialTab = initialTab,
             )
         }
     }
@@ -197,8 +196,8 @@ private fun DrivePortraitLayout(
     actions: DriveActions,
     onReleaseRequest: () -> Unit,
     onReverseRequest: (DriveDirection) -> Unit,
+    initialTab: DriveInstrumentTab,
 ) {
-    var functionsExpanded by rememberSaveable { mutableStateOf(false) }
     val loco = uiState.loco
     Column(modifier = Modifier.fillMaxSize()) {
         DriveHeaderFor(uiState, actions, onReleaseRequest)
@@ -222,46 +221,15 @@ private fun DrivePortraitLayout(
                     .padding(horizontal = CabTheme.spacing.page, vertical = CabTheme.spacing.xs),
             )
         }
-        Column(
-            modifier =
-            Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(horizontal = CabTheme.spacing.page, vertical = CabTheme.spacing.xs),
-            verticalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm),
-        ) {
-            DriveLeverPanel(
-                loco = loco,
-                enabled = uiState.controlsEnabled,
-                scale = uiState.scale,
-                haptics = uiState.haptics,
-                actions = actions,
-                modifier = Modifier.weight(1f),
-            )
-            ControlCluster(
-                loco = loco,
-                enabled = uiState.controlsEnabled,
-                haptics = uiState.haptics,
-                actions = actions,
-                onReverseRequest = onReverseRequest,
-            )
-        }
-        DriveFunctionsPanel(
-            functions = loco.functions,
+        DrivePortraitInstrument(
+            loco = loco,
             enabled = uiState.controlsEnabled,
+            scale = uiState.scale,
+            haptics = uiState.haptics,
             actions = actions,
-            expanded = functionsExpanded,
-            onToggleExpanded = { functionsExpanded = !functionsExpanded },
-            modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = CabTheme.spacing.page,
-                    end = CabTheme.spacing.page,
-                    top = CabTheme.spacing.xs,
-                    bottom = CabTheme.spacing.sm,
-                )
-                .heightIn(min = 72.dp, max = if (functionsExpanded) 256.dp else 72.dp),
+            onReverseRequest = onReverseRequest,
+            initialTab = initialTab,
+            modifier = Modifier.weight(1f).fillMaxWidth(),
         )
     }
 }
@@ -274,6 +242,8 @@ private fun DriveWideLayout(
     onReverseRequest: (DriveDirection) -> Unit,
 ) {
     val loco = uiState.loco
+    val landscape =
+        LocalConfiguration.current.screenWidthDp > LocalConfiguration.current.screenHeightDp
     Column(modifier = Modifier.fillMaxSize()) {
         DriveHeaderFor(uiState, actions, onReleaseRequest)
         DriveBannersFor(uiState)
@@ -293,47 +263,40 @@ private fun DriveWideLayout(
                 .padding(horizontal = CabTheme.spacing.page, vertical = CabTheme.spacing.xs),
             horizontalArrangement = Arrangement.spacedBy(CabTheme.spacing.md),
         ) {
-            Column(
+            Box(
                 modifier = Modifier.weight(1f).fillMaxHeight(),
-                verticalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm),
+                contentAlignment = Alignment.Center,
             ) {
-                if (loco.issue != null) {
-                    DriveIssueCard(address = loco.address, issue = loco.issue, actions = actions)
+                Column(
+                    modifier =
+                    Modifier
+                        .widthIn(max = 1000.dp)
+                        .then(if (landscape) Modifier.heightIn(max = 820.dp) else Modifier)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm),
+                ) {
+                    if (loco.issue != null) {
+                        DriveIssueCard(address = loco.address, issue = loco.issue, actions = actions)
+                    }
+                    DriveLeverPanel(
+                        loco = loco,
+                        enabled = uiState.controlsEnabled,
+                        scale = uiState.scale,
+                        haptics = uiState.haptics,
+                        actions = actions,
+                        onReverseRequest = onReverseRequest,
+                        modifier = Modifier.weight(1f),
+                    )
                 }
-                DriveLeverPanel(
-                    loco = loco,
-                    enabled = uiState.controlsEnabled,
-                    scale = uiState.scale,
-                    haptics = uiState.haptics,
-                    actions = actions,
-                    modifier = Modifier.weight(1f),
-                )
             }
             DriveFunctionsPanel(
                 functions = loco.functions,
                 enabled = uiState.controlsEnabled,
                 actions = actions,
-                expanded = true,
                 modifier =
                 Modifier
-                    .widthIn(min = 240.dp, max = 420.dp)
+                    .widthIn(min = 240.dp, max = 360.dp)
                     .fillMaxHeight(),
-            )
-        }
-        Box(
-            modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = CabTheme.spacing.page, vertical = CabTheme.spacing.xs),
-            contentAlignment = Alignment.CenterEnd,
-        ) {
-            ControlCluster(
-                loco = loco,
-                enabled = uiState.controlsEnabled,
-                haptics = uiState.haptics,
-                actions = actions,
-                onReverseRequest = onReverseRequest,
-                modifier = Modifier.widthIn(max = 560.dp),
             )
         }
     }
@@ -376,6 +339,9 @@ private fun DriveHeader(
     actions: DriveActions,
     onReleaseRequest: () -> Unit,
 ) {
+    val largeText =
+        LocalDensity.current.fontScale >= 1.5f &&
+            LocalConfiguration.current.screenWidthDp < 600
     Surface(
         color = CabTheme.colorScheme.surface,
         contentColor = CabTheme.colorScheme.onSurface,
@@ -398,7 +364,7 @@ private fun DriveHeader(
                         bottom = CabTheme.spacing.xs,
                     )
                     .testTag(DriveTestTags.HEADER),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = if (largeText) Alignment.Top else Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -417,15 +383,31 @@ private fun DriveHeader(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                StatusPill(
-                    status = status,
-                    attempt = attempt,
-                    modifier = Modifier.testTag(DriveTestTags.STATUS),
-                )
+                if (!largeText) {
+                    StatusPill(
+                        status = status,
+                        attempt = attempt,
+                        modifier = Modifier.testTag(DriveTestTags.STATUS),
+                    )
+                }
                 DriveMenu(
                     hasLoco = hasLoco,
                     actions = actions,
                     onReleaseRequest = onReleaseRequest,
+                )
+            }
+            if (largeText) {
+                StatusPill(
+                    status = status,
+                    attempt = attempt,
+                    modifier =
+                    Modifier
+                        .padding(
+                            start = CabTheme.spacing.page,
+                            end = CabTheme.spacing.page,
+                            bottom = CabTheme.spacing.xs,
+                        )
+                        .testTag(DriveTestTags.STATUS),
                 )
             }
             HorizontalDivider(color = CabTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
@@ -654,138 +636,6 @@ private fun DriveIssueCard(
         null -> Unit
     }
 }
-
-@Composable
-private fun ControlCluster(
-    loco: DriveLoco,
-    enabled: Boolean,
-    haptics: DriveHaptics,
-    actions: DriveActions,
-    onReverseRequest: (DriveDirection) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val performHaptic = rememberDriveHaptics(haptics)
-    val target =
-        if (loco.direction == DriveDirection.Forward) {
-            DriveDirection.Reverse
-        } else {
-            DriveDirection.Forward
-        }
-    val stopDescription =
-        stringResource(R.string.drive_stop_description, loco.speedStep, loco.speedStepCount)
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm),
-    ) {
-        DirectionButton(
-            direction = loco.direction,
-            enabled = enabled,
-            onClick = {
-                if (loco.isMoving) {
-                    onReverseRequest(target)
-                } else {
-                    performHaptic(DriveHapticToken.Confirm)
-                    actions.onDirectionChange(target)
-                }
-            },
-            modifier = Modifier.weight(1f),
-        )
-        PrimaryActionButton(
-            text = stringResource(R.string.drive_stop),
-            onClick = {
-                performHaptic(DriveHapticToken.Confirm)
-                actions.onStop()
-            },
-            enabled = loco.issue != DriveIssue.InUse,
-            size = PrimaryActionSize.Large,
-            tone = PrimaryActionTone.Destructive,
-            modifier =
-            Modifier
-                .weight(1.7f)
-                .testTag(DriveTestTags.STOP)
-                .semantics { stateDescription = stopDescription },
-        )
-    }
-}
-
-@Composable
-private fun DirectionButton(
-    direction: DriveDirection,
-    enabled: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val label = directionLabelFor(direction)
-    val directionState = stringResource(R.string.drive_direction_state, label)
-    val contentColor =
-        if (enabled) {
-            CabTheme.colorScheme.onSurface
-        } else {
-            CabTheme.extendedColors.disabledContent
-        }
-    val captionColor =
-        if (enabled) {
-            CabTheme.colorScheme.onSurfaceVariant
-        } else {
-            CabTheme.extendedColors.disabledContent
-        }
-    Surface(
-        onClick = onClick,
-        enabled = enabled,
-        modifier =
-        modifier
-            .heightIn(min = CabTheme.sizing.touchSecondary)
-            .testTag(DriveTestTags.DIRECTION)
-            .semantics { stateDescription = directionState },
-        shape = CabTheme.shapes.control,
-        color =
-        if (enabled) {
-            CabTheme.colorScheme.surfaceContainerHigh
-        } else {
-            CabTheme.colorScheme.surfaceContainerLow
-        },
-        contentColor = contentColor,
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = CabTheme.spacing.md, vertical = CabTheme.spacing.sm),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            Icon(
-                imageVector =
-                if (direction == DriveDirection.Forward) {
-                    Icons.Filled.KeyboardArrowUp
-                } else {
-                    Icons.Filled.KeyboardArrowDown
-                },
-                contentDescription = null,
-                modifier = Modifier.size(CabTheme.sizing.iconMedium),
-            )
-            Spacer(Modifier.size(CabTheme.spacing.xs))
-            Column {
-                Text(
-                    text = stringResource(R.string.drive_direction),
-                    style = CabTheme.typography.speedCaption,
-                    color = captionColor,
-                )
-                Text(
-                    text = label.uppercase(),
-                    style = CabTheme.typography.status,
-                    color = contentColor,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun directionLabelFor(direction: DriveDirection): String = stringResource(
-    if (direction == DriveDirection.Forward) {
-        R.string.drive_forward
-    } else {
-        R.string.drive_reverse
-    },
-)
 
 @Composable
 private fun DriveEmptyContent(

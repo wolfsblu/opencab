@@ -7,8 +7,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import dev.opencab.core.data.db.MIGRATION_1_2
 import dev.opencab.core.data.db.OpenCabDatabase
-import dev.opencab.core.data.db.SavedLocoDao
+import dev.opencab.core.data.db.RosterLocoDao
+import dev.opencab.core.data.roster.DefaultRosterRepository
+import dev.opencab.core.data.roster.EpochClock
+import dev.opencab.core.data.roster.RosterRepository
 import javax.inject.Singleton
 
 @Module
@@ -23,8 +27,20 @@ object DatabaseModule {
             context,
             OpenCabDatabase::class.java,
             OpenCabDatabase.NAME,
-        ).build()
+        ).addMigrations(MIGRATION_1_2)
+        .build()
 
     @Provides
-    fun provideSavedLocoDao(database: OpenCabDatabase): SavedLocoDao = database.savedLocoDao()
+    fun provideRosterLocoDao(database: OpenCabDatabase): RosterLocoDao = database.rosterLocoDao()
+
+    @Provides
+    @Singleton
+    fun provideRosterRepository(
+        dao: RosterLocoDao,
+        clock: EpochClock,
+    ): RosterRepository = DefaultRosterRepository(dao, clock)
+
+    @Provides
+    @Singleton
+    fun provideEpochClock(): EpochClock = EpochClock { System.currentTimeMillis() }
 }
