@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,6 +15,7 @@ import dev.opencab.core.designsystem.navigation.CabNavigationDestination
 import dev.opencab.core.designsystem.navigation.CabNavigationSuite
 import dev.opencab.core.designsystem.navigation.CabPredictiveBackContainer
 import dev.opencab.core.designsystem.theme.CabTheme
+import dev.opencab.core.model.ConnectionState
 import dev.opencab.feature.connection.CONNECTION_ROUTE
 import dev.opencab.feature.connection.ConnectionRoute
 import dev.opencab.feature.roster.ROSTER_ROUTE
@@ -30,11 +30,13 @@ import dev.opencab.ui.navigation.topLevelDestinations
 fun OpenCabApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
+    connectionState: ConnectionState = ConnectionState.Disconnected,
+    onExit: () -> Unit = {},
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val isTopLevelDestination =
-        currentRoute == null || topLevelDestinations.any { destination -> destination.route == currentRoute }
+        currentRoute != null && topLevelDestinations.any { destination -> destination.route == currentRoute }
     val navigationDestinations =
         topLevelDestinations.map { destination ->
             CabNavigationDestination(
@@ -59,7 +61,7 @@ fun OpenCabApp(
         ) {
             NavHost(
                 navController = navController,
-                startDestination = DRIVE_ROUTE,
+                startDestination = CONNECTION_ROUTE,
                 enterTransition = { fadeIn(motion.fadeThrough) },
                 exitTransition = { fadeOut(motion.duration(durationMillis = 90)) },
                 popEnterTransition = { fadeIn(motion.fadeThrough) },
@@ -67,6 +69,7 @@ fun OpenCabApp(
             ) {
                 composable(DRIVE_ROUTE) {
                     DriveRoute(
+                        connectionState = connectionState,
                         onOpenConnection = { navController.navigate(CONNECTION_ROUTE) },
                     )
                 }
@@ -79,7 +82,12 @@ fun OpenCabApp(
                     )
                 }
                 composable(CONNECTION_ROUTE) {
-                    ConnectionRoute(onBack = { navController.popBackStack() })
+                    ConnectionRoute(
+                        onBack = {
+                            if (!navController.popBackStack()) onExit()
+                        },
+                        onOpenDrive = { navController.openDriveFromConnection() },
+                    )
                 }
             }
         }
@@ -88,10 +96,26 @@ fun OpenCabApp(
 
 private fun NavHostController.navigateToTopLevel(route: String) {
     navigate(route) {
-        popUpTo(graph.findStartDestination().id) {
+        // Drive is the home destination; Connect is a gate that is removed once linked.
+        popUpTo(DRIVE_ROUTE) {
             saveState = true
         }
         launchSingleTop = true
         restoreState = true
+    }
+}
+
+/**
+ * Makes Drive the visible destination after a successful connect.
+ *
+ * If Drive is already on the stack (Connection was opened from Drive or Settings), pop back to
+ * it. On a cold start Connection is the graph root, so Drive is pushed and Connection is removed
+ * from the back stack: Connect is a gate, not a screen to return to.
+ */
+private fun NavHostController.openDriveFromConnection() {
+    if (popBackStack(DRIVE_ROUTE, inclusive = false)) return
+    navigate(DRIVE_ROUTE) {
+        popUpTo(CONNECTION_ROUTE) { inclusive = true }
+        launchSingleTop = true
     }
 }

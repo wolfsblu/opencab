@@ -271,3 +271,25 @@ The decision is only real if these exist by the end of Step 1:
 - **Verification.** `docs/protocol.md` records the exact wire mappings and the supported/unsupported
   matrix. Plain JVM tests cover golden messages, captured transcripts, every-byte chunk splits,
   round trips, malformed input, duplicates/unknowns, and reducer transitions.
+
+## Addendum: connection layer placement (Step 5)
+
+- **Decision.** The Step 4 connection infrastructure required by the Step 5 screen lives in
+  `:core:data`, not in a separate `:protocol:withrottle` adapter: `NsdManager` discovery, the
+  DataStore saved-layout store, `WiThrottleSession` (socket, greeting, version gate, heartbeat,
+  reconnect backoff), `DemoTransport`, and the app-scoped `ConnectionRepository`.
+- **Boundary.** `:feature:connection` depends on `:core:data` and `:core:model`, never on
+  `:core:protocol`. It renders immutable `ConnectionUiState` and emits typed actions; sockets,
+  protocol events, and exception text are below the ViewModel.
+- **Local-network permission.** With `targetSdk = 36`, Android uses `NEARBY_WIFI_DEVICES` as the
+  temporary local-network permission for nearby Wi-Fi discovery. The manifest declares it with
+  `neverForLocation`. When the app moves to `targetSdk = 37`, `LocalNetworkPermission` switches to
+  `ACCESS_LOCAL_NETWORK` and the manifest must declare it. The screen shows the rationale before
+  requesting, never loops the dialog, and offers an app-Settings deep link after denial. Manual
+  entry remains available.
+- **Drive hand-off.** The nav graph now starts at `CONNECTION_ROUTE`. Once the repository reports
+  `Connected`, the gate is removed from the back stack and Drive becomes the visible destination.
+  Drive reads the same repository, so its link state and demo banner cannot disagree with Connect.
+- **Revisit when.** A second protocol is funded, or Step 6 needs a session layer between the
+  repository and the throttle engine. At that point the transport can move behind a protocol port
+  without changing the connection screen.

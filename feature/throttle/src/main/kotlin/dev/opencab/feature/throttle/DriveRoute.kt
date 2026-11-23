@@ -4,12 +4,21 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,6 +37,7 @@ import dev.opencab.core.designsystem.component.SpeedDisplay
 import dev.opencab.core.designsystem.component.StatusPill
 import dev.opencab.core.designsystem.preview.CabPreview
 import dev.opencab.core.designsystem.theme.CabTheme
+import dev.opencab.core.model.ConnectionMode
 import dev.opencab.core.model.ConnectionState
 
 const val DRIVE_ROUTE: String = "drive"
@@ -36,9 +46,10 @@ const val DRIVE_ROUTE: String = "drive"
 fun DriveRoute(
     onOpenConnection: () -> Unit,
     modifier: Modifier = Modifier,
+    connectionState: ConnectionState = ConnectionState.Disconnected,
 ) {
     DriveScreen(
-        connectionState = ConnectionState.Disconnected,
+        connectionState = connectionState,
         onOpenConnection = onOpenConnection,
         modifier = modifier,
     )
@@ -53,8 +64,25 @@ internal fun DriveScreen(
     val status = connectionState.toCabStatus()
     val subtitle =
         when (connectionState) {
-            is ConnectionState.Connected -> connectionState.endpoint
-            ConnectionState.Connecting -> stringResource(R.string.drive_subtitle_connecting)
+            is ConnectionState.Connected ->
+                if (connectionState.target.mode == ConnectionMode.DEMO) {
+                    stringResource(R.string.drive_subtitle_demo)
+                } else {
+                    connectionState.target.endpoint.display
+                }
+
+            is ConnectionState.Connecting ->
+                stringResource(R.string.drive_subtitle_connecting_to, connectionState.target.name)
+
+            is ConnectionState.Reconnecting ->
+                stringResource(
+                    R.string.drive_subtitle_reconnecting,
+                    connectionState.target.name,
+                    connectionState.attempt,
+                )
+
+            is ConnectionState.Failed -> stringResource(R.string.drive_subtitle_no_link)
+
             ConnectionState.Disconnected -> stringResource(R.string.drive_subtitle_no_link)
         }
 
@@ -63,7 +91,10 @@ internal fun DriveScreen(
         subtitle = subtitle,
         modifier = modifier.testTag("screen_drive"),
         actions = {
-            StatusPill(status = status)
+            StatusPill(
+                status = status,
+                attempt = (connectionState as? ConnectionState.Reconnecting)?.attempt,
+            )
         },
     ) { contentPadding ->
         DriveContent(
@@ -97,13 +128,21 @@ private fun DriveContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(CabTheme.spacing.md),
         ) {
+            if (connectionState is ConnectionState.Connected &&
+                connectionState.target.mode == ConnectionMode.DEMO
+            ) {
+                DriveDemoBanner()
+            }
             SpeedDisplay(
                 percent = 0,
                 direction = CabDirection.Forward,
                 enabled = connectionState is ConnectionState.Connected,
             )
-            LocomotiveCard()
-            LinkCard(onOpenConnection = onOpenConnection)
+            LocomotiveCard(connected = connectionState is ConnectionState.Connected)
+            LinkCard(
+                connectionState = connectionState,
+                onOpenConnection = onOpenConnection,
+            )
             PrimaryActionButton(
                 text = stringResource(R.string.drive_stop),
                 onClick = {},
@@ -116,7 +155,44 @@ private fun DriveContent(
 }
 
 @Composable
-private fun LocomotiveCard() {
+private fun DriveDemoBanner() {
+    val extended = CabTheme.extendedColors
+    Surface(
+        modifier =
+        Modifier
+            .fillMaxWidth()
+            .testTag("drive_demo_banner"),
+        shape = RoundedCornerShape(12.dp),
+        color = extended.cautionContainer,
+        contentColor = extended.onCautionContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(CabTheme.spacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Info,
+                contentDescription = null,
+                modifier = Modifier.size(CabTheme.sizing.iconMedium),
+                tint = extended.caution,
+            )
+            Spacer(Modifier.width(CabTheme.spacing.sm))
+            Column {
+                Text(
+                    text = stringResource(R.string.drive_demo_banner_title),
+                    style = CabTheme.typography.sectionTitle,
+                )
+                Text(
+                    text = stringResource(R.string.drive_demo_banner_body),
+                    style = CabTheme.typography.readoutSmall,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LocomotiveCard(connected: Boolean) {
     SectionCard(
         title = stringResource(R.string.drive_locomotive_title),
         subtitle = stringResource(R.string.drive_locomotive_subtitle),
@@ -127,7 +203,13 @@ private fun LocomotiveCard() {
             color = CabTheme.colorScheme.onSurface,
         )
         Text(
-            text = stringResource(R.string.drive_locomotive_body),
+            text = stringResource(
+                if (connected) {
+                    R.string.drive_locomotive_body_connected
+                } else {
+                    R.string.drive_locomotive_body
+                },
+            ),
             style = CabTheme.typography.readout,
             color = CabTheme.colorScheme.onSurfaceVariant,
         )
@@ -135,10 +217,38 @@ private fun LocomotiveCard() {
 }
 
 @Composable
-private fun LinkCard(onOpenConnection: () -> Unit) {
+private fun LinkCard(
+    connectionState: ConnectionState,
+    onOpenConnection: () -> Unit,
+) {
     SectionCard(title = stringResource(R.string.drive_link_title)) {
         Text(
-            text = stringResource(R.string.drive_link_body),
+            text = when (connectionState) {
+                is ConnectionState.Connected ->
+                    if (connectionState.target.mode == ConnectionMode.DEMO) {
+                        stringResource(R.string.drive_link_connected_demo)
+                    } else {
+                        stringResource(
+                            R.string.drive_link_connected,
+                            connectionState.target.name,
+                            connectionState.target.endpoint.display,
+                        )
+                    }
+
+                is ConnectionState.Connecting ->
+                    stringResource(R.string.drive_link_connecting, connectionState.target.name)
+
+                is ConnectionState.Reconnecting ->
+                    stringResource(
+                        R.string.drive_link_reconnecting,
+                        connectionState.target.name,
+                        connectionState.attempt,
+                    )
+
+                is ConnectionState.Failed -> stringResource(R.string.drive_link_failed)
+
+                ConnectionState.Disconnected -> stringResource(R.string.drive_link_disconnected)
+            },
             style = CabTheme.typography.readout,
             color = CabTheme.colorScheme.onSurfaceVariant,
         )
@@ -153,8 +263,8 @@ private fun LinkCard(onOpenConnection: () -> Unit) {
 
 private fun ConnectionState.toCabStatus(): CabConnectionStatus = when (this) {
     is ConnectionState.Connected -> CabConnectionStatus.Connected
-    ConnectionState.Connecting -> CabConnectionStatus.Reconnecting
-    ConnectionState.Disconnected -> CabConnectionStatus.Offline
+    is ConnectionState.Connecting, is ConnectionState.Reconnecting -> CabConnectionStatus.Reconnecting
+    is ConnectionState.Failed, ConnectionState.Disconnected -> CabConnectionStatus.Offline
 }
 
 @CabPreview

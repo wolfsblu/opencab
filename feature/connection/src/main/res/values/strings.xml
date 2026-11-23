@@ -1,13 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="connection_title">Connection</string>
-    <string name="connection_subtitle">Command station link</string>
-    <string name="connection_status_title">Link</string>
-    <string name="connection_status_body">OpenCab is not connected to a command station.</string>
-    <string name="connection_protocol_title">Protocol</string>
-    <string name="connection_protocol_status">Not implemented</string>
-    <string name="connection_protocol_body">Protocol framing, transport, discovery, and command encoding arrive in a later milestone.</string>
-    <string name="connection_unavailable_title">Connection isn\'t available yet</string>
-    <string name="connection_unavailable_body">The transport layer is intentionally absent from this scaffold, so there is nothing to connect to.</string>
-    <string name="connection_connect_unavailable">Connect (coming soon)</string>
+    <string name="connection_title">Connect</string>
+    <string name="connection_subtitle">Find your layout</string>
+    <string name="connection_status_offline">Offline</string>
+
+    <string name="connection_nearby_title">Nearby layouts</string>
+    <string name="connection_nearby_scanning_title">Looking for layouts…</string>
+    <string name="connection_nearby_scanning_body">Searching this Wi-Fi for WiThrottle servers.</string>
+    <string name="connection_nearby_still_scanning">Still searching…</string>
+    <string name="connection_rescan">Search again</string>
+    <string name="connection_empty_title">No layouts found nearby</string>
+    <string name="connection_empty_body">Make sure WiThrottle is running and this phone is on the same Wi-Fi, or enter an address manually.</string>
+    <string name="connection_discovery_failed_title">Couldn\'t search for layouts</string>
+    <string name="connection_discovery_failed_body">Searching didn\'t work. You can still enter an address manually.</string>
+    <string name="connection_discovery_permission_body">Searching needs local network access.</string>
+
+    <string name="connection_permission_title">Local network access</string>
+    <string name="connection_permission_body">OpenCab needs permission to find WiThrottle servers on your Wi-Fi. You can still enter an address manually.</string>
+    <string name="connection_permission_denied_title">Local network access is off</string>
+    <string name="connection_permission_denied_body">Allow local network access in Android Settings to search for layouts. Manual entry still works.</string>
+    <string name="connection_permission_allow">Allow access</string>
+    <string name="connection_permission_settings">Open settings</string>
+    <string name="connection_permission_try_again">Try again</string>
+
+    <string name="connection_saved_title">Saved layouts</string>
+    <string name="connection_saved_empty">Layouts you connect to are saved here.</string>
+
+    <string name="connection_manual_open">Enter address manually</string>
+    <string name="connection_manual_section_title">Manual entry</string>
+    <string name="connection_manual_section_body">Know the host and port? Add a layout without discovery.</string>
+    <string name="connection_manual_title">Add layout</string>
+    <string name="connection_manual_edit_title">Edit layout</string>
+    <string name="connection_manual_name">Name (optional)</string>
+    <string name="connection_manual_name_hint">Junction Yard</string>
+    <string name="connection_manual_host">Host</string>
+    <string name="connection_manual_host_hint">192.168.1.24 or jmri.local</string>
+    <string name="connection_manual_port">Port</string>
+    <string name="connection_manual_port_hint">12090</string>
+    <string name="connection_manual_default_port">Default 12090</string>
+    <string name="connection_manual_connect">Connect</string>
+    <string name="connection_manual_save">Save</string>
+    <string name="connection_manual_cancel">Cancel</string>
+    <string name="connection_manual_host_required">Enter the layout\'s address.</string>
+    <string name="connection_manual_host_invalid">Enter an address without http:// or spaces.</string>
+    <string name="connection_manual_port_required">Enter a port.</string>
+    <string name="connection_manual_port_invalid">Enter a port from 1 to 65535.</string>
+
+    <string name="connection_demo_title">Demo mode</string>
+    <string name="connection_demo_subtitle">No layout needed</string>
+    <string name="connection_demo_body">Runs a simulated command station so you can explore OpenCab without Wi-Fi or hardware.</string>
+    <string name="connection_demo_start">Start demo</string>
+    <string name="connection_demo_starting">Starting demo…</string>
+    <string name="connection_demo_running">Demo session running</string>
+    <string name="connection_demo_end">End demo</string>
+    <string name="connection_demo_banner_title">Demo mode</string>
+    <string name="connection_demo_banner_body">Connected to a simulated command station. No real train is attached.</string>
+
+    <string name="connection_link_connecting">Connecting to %1$s…</string>
+    <string name="connection_link_reconnecting">Reconnecting to %1$s (attempt %2$d)…</string>
+    <string name="connection_link_connected">Connected to %1$s</string>
+    <string name="connection_link_connected_demo">Connected to the demo layout</string>
+    <string name="connection_link_demo_endpoint">Simulated command station</string>
+    <string name="connection_link_ready">Drive is ready.</string>
+    <string name="connection_link_open_drive">Open Drive</string>
+    <string name="connection_cancel">Cancel</string>
+    <string name="connection_retry">Try again</string>
+
+    <string name="connection_server_connecting">Connecting…</string>
+    <string name="connection_server_connected">Connected</string>
+    <string name="connection_server_failed">Couldn\'t connect</string>
+    <string name="connection_server_connect">Connect</string>
+    <string name="connection_server_drive">Drive</string>
+    <string name="connection_server_more">More options</string>
+    <string name="connection_server_edit">Edit</string>
+    <string name="connection_server_forget">Forget</string>
+    <string name="connection_server_last_connected">Last connected %1$s</string>
+
+    <string name="connection_error_retry">Try again</string>
+    <string name="connection_error_dismiss">Choose another layout</string>
+    <string name="connection_error_timeout_title">Nothing answered</string>
+    <string name="connection_error_timeout_body">Nothing answered at %1$s. Check that WiThrottle is running and the port is correct.</string>
+    <string name="connection_error_host_title">Address not found</string>
+    <string name="connection_error_host_body">This phone couldn\'t find %1$s. Check the address and that you\'re on the same Wi-Fi.</string>
+    <string name="connection_error_refused_title">Connection refused</string>
+    <string name="connection_error_refused_body">The layout refused the connection at %1$s. Check the WiThrottle port in JMRI preferences.</string>
+    <string name="connection_error_unreachable_title">Can\'t reach the layout</string>
+    <string name="connection_error_unreachable_body">Check your Wi-Fi and the address, then try again.</string>
+    <string name="connection_error_closed_title">The layout closed the connection</string>
+    <string name="connection_error_closed_body">Try again, or check that the WiThrottle server is still running.</string>
+    <string name="connection_error_version_title">This layout needs a newer server</string>
+    <string name="connection_error_version_body">OpenCab needs WiThrottle %1$s or newer. This layout reports %2$s.</string>
+    <string name="connection_error_not_withrottle_title">That isn\'t a WiThrottle server</string>
+    <string name="connection_error_not_withrottle_body">Check that you\'re connecting to the WiThrottle port, usually 12090.</string>
+    <string name="connection_error_permission_title">Local network access is off</string>
+    <string name="connection_error_permission_body">Allow local network access in Settings, then try again. Manual entry still works.</string>
+    <string name="connection_error_unknown_title">Couldn\'t connect</string>
+    <string name="connection_error_unknown_body">Try again. If it keeps failing, check the address and port.</string>
 </resources>

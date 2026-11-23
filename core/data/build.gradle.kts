@@ -37,6 +37,9 @@ ksp {
 }
 
 dependencies {
+    implementation(project(":core:model"))
+    implementation(project(":core:protocol"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.datastore.preferences)
@@ -48,4 +51,6 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
 }

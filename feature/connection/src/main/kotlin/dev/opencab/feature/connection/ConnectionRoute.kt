@@ -1,122 +1,100 @@
 package dev.opencab.feature.connection
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Text
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
-import dev.opencab.core.designsystem.component.CabConnectionStatus
-import dev.opencab.core.designsystem.component.CabScaffold
-import dev.opencab.core.designsystem.component.InlineError
-import dev.opencab.core.designsystem.component.PrimaryActionButton
-import dev.opencab.core.designsystem.component.PrimaryActionSize
-import dev.opencab.core.designsystem.component.SectionCard
-import dev.opencab.core.designsystem.component.StatusPill
-import dev.opencab.core.designsystem.preview.CabPreview
-import dev.opencab.core.designsystem.theme.CabTheme
-import dev.opencab.core.model.ConnectionState
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 const val CONNECTION_ROUTE: String = "connection"
 
+/**
+ * Route wrapper for the connection screen.
+ *
+ * Platform concerns live here: the permission launcher, the Settings deep link, and collecting
+ * one-shot navigation events. Everything below this function is pure Compose over UI state.
+ */
 @Composable
 fun ConnectionRoute(
     onBack: () -> Unit,
+    onOpenDrive: () -> Unit,
     modifier: Modifier = Modifier,
-    connectionState: ConnectionState = ConnectionState.Disconnected,
+    viewModel: ConnectionViewModel = hiltViewModel(),
 ) {
-    val status = connectionState.toCabStatus()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted -> viewModel.onPermissionResult(granted) }
 
-    CabScaffold(
-        title = stringResource(R.string.connection_title),
-        subtitle = stringResource(R.string.connection_subtitle),
-        modifier = modifier.testTag("screen_connection"),
-        onBack = onBack,
-        actions = {
-            StatusPill(status = status)
-        },
-    ) { contentPadding ->
-        Box(
-            modifier =
-            Modifier
-                .padding(contentPadding)
-                .fillMaxSize(),
-            contentAlignment = Alignment.TopCenter,
-        ) {
-            Column(
-                modifier =
-                Modifier
-                    .widthIn(max = CabTheme.sizing.contentMaxWidth)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = CabTheme.spacing.page, vertical = CabTheme.spacing.md),
-                verticalArrangement = Arrangement.spacedBy(CabTheme.spacing.md),
-            ) {
-                SectionCard(title = stringResource(R.string.connection_status_title)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm),
-                    ) {
-                        StatusPill(status = status)
-                        Text(
-                            text = stringResource(R.string.connection_status_body),
-                            style = CabTheme.typography.readout,
-                            color = CabTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
-                }
-                SectionCard(title = stringResource(R.string.connection_protocol_title)) {
-                    Text(
-                        text = stringResource(R.string.connection_protocol_status),
-                        style = CabTheme.typography.address,
-                        color = CabTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = stringResource(R.string.connection_protocol_body),
-                        style = CabTheme.typography.readout,
-                        color = CabTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                InlineError(
-                    title = stringResource(R.string.connection_unavailable_title),
-                    message = stringResource(R.string.connection_unavailable_body),
-                )
-                PrimaryActionButton(
-                    text = stringResource(R.string.connection_connect_unavailable),
-                    onClick = {},
-                    enabled = false,
-                    size = PrimaryActionSize.Regular,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+    LaunchedEffect(viewModel) {
+        viewModel.onPermissionChecked(LocalNetworkPermission.isGranted(context))
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        viewModel.onPermissionChecked(LocalNetworkPermission.isGranted(context))
+    }
+    LaunchedEffect(viewModel) {
+        viewModel.events.collect { event ->
+            when (event) {
+                ConnectionEvent.OpenDrive -> onOpenDrive()
             }
         }
     }
-}
 
-private fun ConnectionState.toCabStatus(): CabConnectionStatus = when (this) {
-    is ConnectionState.Connected -> CabConnectionStatus.Connected
-    ConnectionState.Connecting -> CabConnectionStatus.Reconnecting
-    ConnectionState.Disconnected -> CabConnectionStatus.Offline
-}
+    ConnectionScreen(
+        uiState = uiState,
+        onAction = { action ->
+            when (action) {
+                ConnectionAction.Back -> onBack()
 
-@CabPreview
-@Composable
-private fun ConnectionScreenPreview() {
-    CabTheme {
-        ConnectionRoute(
-            onBack = {},
-            connectionState = ConnectionState.Disconnected,
-        )
-    }
+                ConnectionAction.Rescan -> viewModel.onRescan()
+
+                is ConnectionAction.Connect -> viewModel.onConnect(action.server)
+
+                is ConnectionAction.EditSaved -> viewModel.onEditSaved(action.server)
+
+                is ConnectionAction.DeleteSaved -> viewModel.onDeleteSaved(action.server)
+
+                ConnectionAction.CancelConnection -> viewModel.onCancelConnection()
+
+                ConnectionAction.Retry -> viewModel.onRetry()
+
+                ConnectionAction.DismissFailure -> viewModel.onDismissFailure()
+
+                ConnectionAction.RequestPermission -> {
+                    val permission = LocalNetworkPermission.name
+                    if (permission == null) {
+                        viewModel.onPermissionResult(granted = true)
+                    } else {
+                        permissionLauncher.launch(permission)
+                    }
+                }
+
+                ConnectionAction.OpenSettings ->
+                    LocalNetworkPermission.openSettings(context)
+
+                ConnectionAction.OpenDrive -> onOpenDrive()
+
+                ConnectionAction.OpenManualEntry -> viewModel.onOpenManualEntry()
+
+                ConnectionAction.CancelManualEntry -> viewModel.onCancelManualEntry()
+
+                ConnectionAction.SubmitManualEntry -> viewModel.onSubmitManualEntry()
+
+                ConnectionAction.StartDemo -> viewModel.onStartDemo()
+
+                ConnectionAction.EndDemo -> viewModel.onEndDemo()
+            }
+        },
+        onManualNameChange = viewModel::onManualNameChanged,
+        onManualHostChange = viewModel::onManualHostChanged,
+        onManualPortChange = viewModel::onManualPortChanged,
+        modifier = modifier,
+    )
 }
