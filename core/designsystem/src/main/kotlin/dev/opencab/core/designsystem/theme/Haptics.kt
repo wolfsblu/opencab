@@ -47,7 +47,7 @@ private val CabHapticToken.platformType: HapticFeedbackType
     get() =
         when (this) {
             CabHapticToken.Detent -> HapticFeedbackType.SegmentTick
-            CabHapticToken.Limit -> HapticFeedbackType.SegmentTick
+            CabHapticToken.Limit -> HapticFeedbackType.LongPress
             CabHapticToken.Confirm -> HapticFeedbackType.Confirm
             CabHapticToken.Reject -> HapticFeedbackType.Reject
             CabHapticToken.ToggleOn -> HapticFeedbackType.ToggleOn

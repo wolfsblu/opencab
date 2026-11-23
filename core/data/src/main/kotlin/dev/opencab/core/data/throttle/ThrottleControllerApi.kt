@@ -39,6 +39,11 @@ fun ThrottleController.setDirection(address: LocoAddress, direction: Direction) 
     dispatch(ThrottleIntent.SetDirection(address, direction))
 }
 
+/** Direction without a protocol import at the UI boundary. */
+fun ThrottleController.setDirection(address: LocoAddress, forward: Boolean) {
+    setDirection(address, Direction.fromBoolean(forward))
+}
+
 fun ThrottleController.setSpeedSteps(address: LocoAddress, speedSteps: SpeedSteps) {
     dispatch(ThrottleIntent.SetSpeedSteps(address, speedSteps))
 }

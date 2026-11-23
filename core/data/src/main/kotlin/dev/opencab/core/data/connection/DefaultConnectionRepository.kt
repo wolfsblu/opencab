@@ -31,10 +31,13 @@ class DefaultConnectionRepository @Inject constructor(
     private val mutableState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected)
     override val state: StateFlow<ConnectionState> = mutableState.asStateFlow()
 
+    private val mutableClient = MutableStateFlow<DccClient?>(null)
+    override val activeClient: StateFlow<DccClient?> = mutableClient.asStateFlow()
+
     private var sessionJob: Job? = null
 
     @Volatile
-    private var activeClient: DccClient? = null
+    private var currentClient: DccClient? = null
 
     private var generation: Long = 0
 
@@ -47,7 +50,8 @@ class DefaultConnectionRepository @Inject constructor(
 
         sessionJob = scope.launch {
             val client = clientFactory.create()
-            activeClient = client
+            currentClient = client
+            mutableClient.value = client
             try {
                 runClient(target, client, attemptGeneration)
             } catch (cancellation: CancellationException) {
@@ -61,7 +65,10 @@ class DefaultConnectionRepository @Inject constructor(
                 }
             } finally {
                 client.close()
-                if (activeClient === client) activeClient = null
+                if (currentClient === client) {
+                    currentClient = null
+                    mutableClient.value = null
+                }
             }
         }
     }
@@ -102,8 +109,10 @@ class DefaultConnectionRepository @Inject constructor(
     private fun stopTransport() {
         sessionJob?.cancel()
         sessionJob = null
-        activeClient?.close()
-        activeClient = null
+        val client = currentClient
+        currentClient = null
+        if (mutableClient.value === client) mutableClient.value = null
+        client?.close()
     }
 }
 

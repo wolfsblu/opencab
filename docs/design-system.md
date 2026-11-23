@@ -141,7 +141,7 @@ duration to `snap()`. Haptics are independent of reduced motion.
 | Token | Platform |
 | --- | --- |
 | `Detent` | `SegmentTick` |
-| `Limit` | `SegmentTick` |
+| `Limit` | `LongPress` (a stronger detent at 0/max) |
 | `Confirm` | `Confirm` |
 | `Reject` | `Reject` |
 | `ToggleOn` / `ToggleOff` | `ToggleOn` / `ToggleOff` |
@@ -154,12 +154,12 @@ Haptics are gated by the caller's settings toggle and are never the only feedbac
 | --- | --- | --- |
 | `StatusPill` | `status`, `attempt` | One merged node: "Connected", "Reconnecting, attempt 3", "Offline" |
 | `SpeedDisplay` | `percent`, `direction`, `stale`, `enabled`, `caption`, `arcSize` | Progress semantics + state description ("84 percent, forward") |
-| `FunctionKey` | `label`, `state`, `onClick`, `contentDescription`, `latching` | Checkbox for latching, button for momentary; On/Off/Momentary/Unavailable |
+| `FunctionKey` | `label`, `state`, `onClick`, `contentDescription`, `latching`, optional `onPressStart`/`onPressEnd` | Checkbox for latching, button for momentary; press-and-hold for momentary touch, click action for TalkBack; On/Off/Momentary/Unavailable |
 | `SectionCard` | `title`, `subtitle`, `trailing`, content | Heading on the title |
 | `EmptyState` | `title`, `message`, `icon`, `action` | Heading on the title; icon is decorative |
 | `InlineError` | `title`, `message`, `onRetry`, `retryLabel` | Polite live region on the message |
 | `ConfirmSheet` | `visible`, copy, confirm/dismiss callbacks, `destructive` | Modal sheet; heading; explicit cancel |
-| `PrimaryActionButton` | `text`, `onClick`, `enabled`, `loading`, `icon`, `size` | Button; "Loading" state description while busy |
+| `PrimaryActionButton` | `text`, `onClick`, `enabled`, `loading`, `icon`, `size`, `tone` | Button; `Destructive` tone for Stop/release; "Loading" state description while busy |
 | `SecondaryActionButton` | `text`, `onClick`, `enabled`, `icon`, `contentColor` | 48 dp text action; keeps secondary rows aligned with primary controls |
 | `CabScaffold` | `title`, `subtitle`, `onBack`, `actions`, content padding | Top bar grows with font scale; back button named |
 | `CabNavigationSuite` | destinations, selection, navigation callback, visibility | Adaptive bottom bar/rail |

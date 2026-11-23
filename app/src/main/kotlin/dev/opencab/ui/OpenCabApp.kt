@@ -15,7 +15,6 @@ import dev.opencab.core.designsystem.navigation.CabNavigationDestination
 import dev.opencab.core.designsystem.navigation.CabNavigationSuite
 import dev.opencab.core.designsystem.navigation.CabPredictiveBackContainer
 import dev.opencab.core.designsystem.theme.CabTheme
-import dev.opencab.core.model.ConnectionState
 import dev.opencab.feature.connection.CONNECTION_ROUTE
 import dev.opencab.feature.connection.ConnectionRoute
 import dev.opencab.feature.roster.ROSTER_ROUTE
@@ -30,8 +29,6 @@ import dev.opencab.ui.navigation.topLevelDestinations
 fun OpenCabApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    connectionState: ConnectionState = ConnectionState.Disconnected,
-    onDisconnect: () -> Unit = {},
     onExit: () -> Unit = {},
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -70,10 +67,8 @@ fun OpenCabApp(
             ) {
                 composable(DRIVE_ROUTE) {
                     DriveRoute(
-                        connectionState = connectionState,
                         onOpenConnection = { navController.navigate(CONNECTION_ROUTE) },
                         onChooseLocomotive = { navController.navigateToTopLevel(ROSTER_ROUTE) },
-                        onDisconnect = onDisconnect,
                     )
                 }
                 composable(ROSTER_ROUTE) {

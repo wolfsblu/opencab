@@ -11,7 +11,6 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import dev.opencab.core.data.connection.ConnectionRepository
 import dev.opencab.core.data.settings.AppTheme
 import dev.opencab.core.data.settings.SettingsRepository
 import dev.opencab.core.designsystem.theme.CabTheme
@@ -23,9 +22,6 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var settingsRepository: SettingsRepository
 
-    @Inject
-    lateinit var connectionRepository: ConnectionRepository
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -34,7 +30,6 @@ class MainActivity : ComponentActivity() {
             val appTheme by settingsRepository.appTheme.collectAsStateWithLifecycle(
                 initialValue = AppTheme.SYSTEM,
             )
-            val connectionState by connectionRepository.state.collectAsStateWithLifecycle()
             val darkTheme =
                 when (appTheme) {
                     AppTheme.SYSTEM -> isSystemInDarkTheme()
@@ -53,11 +48,7 @@ class MainActivity : ComponentActivity() {
             }
 
             CabTheme(darkTheme = darkTheme) {
-                OpenCabApp(
-                    connectionState = connectionState,
-                    onDisconnect = { connectionRepository.disconnect() },
-                    onExit = { finish() },
-                )
+                OpenCabApp(onExit = { finish() })
             }
         }
     }

@@ -1,6 +1,7 @@
 package dev.opencab.feature.connection
 
 import dev.opencab.core.data.connection.ConnectionRepository
+import dev.opencab.core.data.connection.DccClient
 import dev.opencab.core.data.connection.DiscoverySnapshot
 import dev.opencab.core.data.connection.SavedServerStore
 import dev.opencab.core.data.connection.ServerDiscovery
@@ -73,6 +74,7 @@ internal class FakeSavedServerStore(
 internal class FakeConnectionRepository : ConnectionRepository {
     private val mutableState = MutableStateFlow<ConnectionState>(ConnectionState.Disconnected)
     override val state: StateFlow<ConnectionState> = mutableState.asStateFlow()
+    override val activeClient: StateFlow<DccClient?> = MutableStateFlow(null)
 
     val connectedTargets = mutableListOf<ConnectionTarget>()
     var cancelCount: Int = 0

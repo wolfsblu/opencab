@@ -18,6 +18,8 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -33,6 +35,7 @@ class DefaultConnectionRepositoryTest {
 
         repository.connect(target)
         assertTrue(repository.state.value is ConnectionState.Connecting)
+        assertSame(client, repository.activeClient.value)
 
         client.emit(
             DccConnectionState.Connected(
@@ -62,6 +65,7 @@ class DefaultConnectionRepositoryTest {
 
         repository.cancel()
         assertTrue(repository.state.value is ConnectionState.Disconnected)
+        assertNull(repository.activeClient.value)
         assertTrue(client.closed)
     }
 

@@ -36,6 +36,12 @@ enum class PrimaryActionSize(
     Large(64.dp),
 }
 
+/** The visual weight of a primary action. Destructive is reserved for stopping or releasing. */
+enum class PrimaryActionTone {
+    Default,
+    Destructive,
+}
+
 /**
  * The one primary action on a screen.
  *
@@ -43,6 +49,7 @@ enum class PrimaryActionSize(
  * Stop uses it too. [Large] is reserved for a single emphasised action.
  */
 @Composable
+@Suppress("LongParameterList")
 fun PrimaryActionButton(
     text: String,
     onClick: () -> Unit,
@@ -51,8 +58,19 @@ fun PrimaryActionButton(
     loading: Boolean = false,
     icon: ImageVector? = null,
     size: PrimaryActionSize = PrimaryActionSize.Regular,
+    tone: PrimaryActionTone = PrimaryActionTone.Default,
 ) {
     val loadingLabel = stringResource(R.string.cab_loading)
+    val colors =
+        when (tone) {
+            PrimaryActionTone.Default -> ButtonDefaults.buttonColors()
+
+            PrimaryActionTone.Destructive ->
+                ButtonDefaults.buttonColors(
+                    containerColor = CabTheme.colorScheme.error,
+                    contentColor = CabTheme.colorScheme.onError,
+                )
+        }
     Button(
         onClick = onClick,
         modifier =
@@ -63,7 +81,7 @@ fun PrimaryActionButton(
             },
         enabled = enabled && !loading,
         shape = CabTheme.shapes.pill,
-        colors = ButtonDefaults.buttonColors(),
+        colors = colors,
         contentPadding =
         PaddingValues(
             horizontal = CabTheme.spacing.lg,

@@ -11,8 +11,8 @@ Android view, socket, or timer-thread code.
 | Layer | Responsibility |
 | --- | --- |
 | `:core:protocol` | Wire codec, typed commands/events, and the pure `SessionReducer`. |
-| `:core:data` | `DccClient`, live transport, and the `ThrottleController` engine. |
-| `:feature:throttle` | Still a visual scaffold in Step 6; Step 7 adds the Compose throttle. |
+| `:core:data` | `DccClient`, live transport, the `ThrottleController` engine, and `ThrottleSession`. |
+| `:feature:throttle` | Compose drive screen over `ThrottleSession`; see [`drive-screen.md`](drive-screen.md). |
 
 The engine reuses `SessionReducer` for acquisition, steal, movement, function, and power state. It
 filters the reducer's handshake and heartbeat commands because `WiThrottleClient` already owns
@@ -44,6 +44,12 @@ controller.unlink()                     // detach without releasing
 `uiState` is an immutable `StateFlow<ThrottleUiState>`. The UI never imports a socket, protocol
 command, or decoder. `ThrottleIntent` carries the same operations; the convenience methods are
 thin wrappers around `dispatch(intent)`.
+
+`ThrottleSession` (in `:core:data`) is the app-scoped attach point. It creates the controller,
+follows `ConnectionRepository.activeClient`, links once per transport session, and exposes a
+single-slot facade (`setSpeed`, `nudge`, `stop`, `setDirection`, function, steal, retry, release)
+that keeps `LocoAddress` and `Direction` inside the data layer. The drive view model only sees
+plain floats, booleans, and screen enums.
 
 Each `ThrottleSlotUiState` exposes:
 
@@ -134,7 +140,8 @@ No test uses wall-clock sleeps or non-deterministic ordering.
 
 ## Known limits
 
-- No Compose throttle UI, multi-throttle surface, app-side linking, or consists (Steps 7 and 9).
+- The drive screen uses one acquired slot. Multi-throttle, app-side linking, and consists are
+  Step 9; roster-driven acquisition is Step 8.
 - Slots are in memory only; process-death restoration belongs to later steps.
 - The engine uses the default WiThrottle throttle key and the reducer's default identity.
 - Track power is status-only; `SetTrackPower` remains disabled in the reducer.

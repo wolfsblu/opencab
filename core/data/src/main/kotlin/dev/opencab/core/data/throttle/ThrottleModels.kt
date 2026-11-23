@@ -109,6 +109,14 @@ data class ThrottleSlotUiState(
     val canControl: Boolean
         get() = health == ThrottleHealth.ONLINE && acquisition == ThrottleAcquisitionState.ACQUIRED
 
+    /** Direction as a plain boolean, so UI layers do not need a protocol import. */
+    val isForward: Boolean
+        get() = direction == Direction.FORWARD
+
+    /** Address digits without exposing a protocol type to the UI layer. */
+    val addressDisplay: String
+        get() = address.number.toString()
+
     fun function(number: Int): ThrottleFunctionUiState? = functions.firstOrNull { it.number == number }
 }
 
@@ -123,6 +131,10 @@ data class ThrottleUiState(
 ) {
     val canControl: Boolean
         get() = link == ThrottleLinkState.CONNECTED
+
+    /** Track power as a plain boolean, so UI layers do not need a protocol import. */
+    val trackPowerOn: Boolean
+        get() = trackPower != TrackPowerState.OFF
 
     fun slot(address: LocoAddress): ThrottleSlotUiState? = slots.firstOrNull { it.address == address }
 }

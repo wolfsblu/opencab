@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -18,14 +19,19 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
@@ -53,8 +59,12 @@ enum class FunctionKeyState {
  * @param contentDescription Optional accessible name such as "Function 3, Whistle". When
  *   omitted the visible label is used.
  * @param latching Whether the key is a checkbox or a momentary button.
+ * @param onPressStart When supplied for a momentary key, a touch begins a press-and-hold instead
+ *   of a click. TalkBack still activates the key through [onClick].
+ * @param onPressEnd Ends the press started by [onPressStart], including on cancellation.
  */
 @Composable
+@Suppress("LongParameterList")
 fun FunctionKey(
     label: String,
     state: FunctionKeyState,
@@ -62,6 +72,8 @@ fun FunctionKey(
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
     latching: Boolean = true,
+    onPressStart: (() -> Unit)? = null,
+    onPressEnd: (() -> Unit)? = null,
 ) {
     val colors = CabTheme.colorScheme
     val tones = functionKeyColors(state, colors, CabTheme.extendedColors)
@@ -74,12 +86,21 @@ fun FunctionKey(
     )
     val stateLabel = functionKeyStateLabel(state)
     val interactionModifier =
-        Modifier.functionKeyInteraction(
-            latching = latching,
-            selected = state == FunctionKeyState.Active,
-            enabled = enabled,
-            onClick = onClick,
-        )
+        if (!latching && onPressStart != null) {
+            Modifier.functionKeyHoldInteraction(
+                enabled = enabled,
+                onClick = onClick,
+                onPressStart = onPressStart,
+                onPressEnd = onPressEnd,
+            )
+        } else {
+            Modifier.functionKeyInteraction(
+                latching = latching,
+                selected = state == FunctionKeyState.Active,
+                enabled = enabled,
+                onClick = onClick,
+            )
+        }
 
     Box(
         modifier =
@@ -176,6 +197,43 @@ private fun Modifier.functionKeyInteraction(
         role = Role.Button,
         onClick = onClick,
     )
+}
+
+@Composable
+private fun Modifier.functionKeyHoldInteraction(
+    enabled: Boolean,
+    onClick: () -> Unit,
+    onPressStart: () -> Unit,
+    onPressEnd: (() -> Unit)?,
+): Modifier {
+    val currentClick by rememberUpdatedState(onClick)
+    val currentStart by rememberUpdatedState(onPressStart)
+    val currentEnd by rememberUpdatedState(onPressEnd)
+    return this
+        .semantics {
+            role = Role.Button
+            if (enabled) {
+                onClick {
+                    currentClick()
+                    true
+                }
+            } else {
+                disabled()
+            }
+        }
+        .pointerInput(enabled) {
+            if (!enabled) return@pointerInput
+            detectTapGestures(
+                onPress = {
+                    currentStart()
+                    try {
+                        tryAwaitRelease()
+                    } finally {
+                        currentEnd?.invoke()
+                    }
+                },
+            )
+        }
 }
 
 @Composable

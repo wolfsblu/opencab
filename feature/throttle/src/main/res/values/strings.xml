@@ -1,31 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="drive_title">Drive</string>
-    <string name="drive_subtitle_connecting_to">Connecting to %1$s</string>
-    <string name="drive_subtitle_reconnecting">Reconnecting to %1$s (attempt %2$d)</string>
-    <string name="drive_subtitle_no_link">No link</string>
+    <string name="drive_header_no_loco">No locomotive</string>
+    <string name="drive_header_no_layout">No layout</string>
+    <string name="drive_header_address">Address %1$s</string>
+    <string name="drive_header_address_layout">%1$s · %2$s</string>
+    <string name="drive_more_actions">More actions</string>
+    <string name="drive_open_connection">Open connection</string>
+    <string name="drive_cancel">Cancel</string>
 
-    <string name="drive_locomotive_title">Locomotive</string>
-    <string name="drive_locomotive_subtitle">Not acquired</string>
-    <string name="drive_locomotive_subtitle_acquired">Acquired</string>
-    <string name="drive_locomotive_body_connected">Choose a locomotive from the roster to start driving.</string>
-    <string name="drive_locomotive_body_ready">Ready to drive.</string>
-    <string name="drive_choose_locomotive">Choose locomotive</string>
+    <string name="drive_banner_connecting">Connecting…</string>
+    <string name="drive_banner_connecting_body">Controls will unlock when the layout answers.</string>
+    <string name="drive_banner_reconnecting">Reconnecting… (attempt %1$d)</string>
+    <string name="drive_banner_reconnecting_short">Reconnecting…</string>
+    <string name="drive_banner_paused">Controls are paused until the link returns.</string>
+    <string name="drive_banner_lost">Connection lost</string>
+    <string name="drive_banner_lost_body">Controls are paused. Stop remains available.</string>
+    <string name="drive_banner_stale">Showing the last known state.</string>
+    <string name="drive_banner_stale_body">The throttle is paused until the layout confirms the locomotive.</string>
+    <string name="drive_power_off">Track power is off — trains won\'t move.</string>
+    <string name="drive_power_off_body">The layout may restore power at any time.</string>
 
+    <string name="drive_step_value">%1$d</string>
+    <string name="drive_step_total">/ %1$d steps</string>
+    <string name="drive_step_state">%1$d of %2$d steps, %3$s</string>
+    <string name="drive_last_known">Last known</string>
+    <string name="drive_max">MAX</string>
+    <string name="drive_estimate_kmh">est. %1$d km/h</string>
+    <string name="drive_estimate_mph">est. %1$d mph</string>
+    <string name="drive_estimate_description">Estimated scale speed %1$d %2$s</string>
+    <string name="drive_estimate_kmh_description">kilometres per hour</string>
+    <string name="drive_estimate_mph_description">miles per hour</string>
+    <string name="drive_scale_caption">Estimated from scale calibration</string>
+
+    <string name="drive_lever_description">Throttle lever</string>
+    <string name="drive_announcement">Speed %1$d of %2$d steps</string>
+    <string name="drive_nudge_up">Increase one step</string>
+    <string name="drive_nudge_down">Decrease one step</string>
+    <string name="drive_nudge_up_short">+1</string>
+    <string name="drive_nudge_down_short">−1</string>
+    <string name="drive_stop">Stop train</string>
+    <string name="drive_stop_description">Stop train. %1$d of %2$d steps.</string>
+    <string name="drive_direction">Direction</string>
+    <string name="drive_direction_state">Direction: %1$s</string>
+    <string name="drive_forward">Forward</string>
+    <string name="drive_reverse">Reverse</string>
+
+    <string name="drive_reverse_prompt_title">Stop, then reverse?</string>
+    <string name="drive_reverse_prompt_message">The train is moving. Stopping first prevents a direction change under power.</string>
+    <string name="drive_reverse_confirm">Stop &amp; reverse</string>
+
+    <string name="drive_functions">Functions</string>
+    <string name="drive_functions_count">Functions · %1$d on</string>
+    <string name="drive_functions_show">Show functions</string>
+    <string name="drive_functions_hide">Hide functions</string>
+    <string name="drive_function_description">Function %1$d, %2$s</string>
+
+    <string name="drive_issue_in_use_title">Locomotive in use</string>
+    <string name="drive_issue_in_use_message">%1$s is in use by another throttle. Taking control will stop it for the other operator.</string>
+    <string name="drive_issue_timeout_title">No answer from the layout</string>
+    <string name="drive_issue_timeout_message">The layout didn\'t confirm %1$s.</string>
+    <string name="drive_issue_command_title">Command not confirmed</string>
+    <string name="drive_issue_command_message">The last command for %1$s did not reach the layout.</string>
+    <string name="drive_take_control">Take control</string>
+    <string name="drive_retry">Try again</string>
+
+    <string name="drive_release">Release locomotive</string>
+    <string name="drive_release_title">Release %1$s?</string>
+    <string name="drive_release_message_moving">Stops the train, then frees the address.</string>
+    <string name="drive_release_message_stopped">Frees the address for another throttle.</string>
+    <string name="drive_release_confirm">Release</string>
+
+    <string name="drive_empty_title">No locomotive acquired</string>
+    <string name="drive_empty_body">Choose a locomotive to start driving.</string>
+    <string name="drive_choose_loco">Choose locomotive</string>
     <string name="drive_no_link_title">No layout connected</string>
     <string name="drive_no_link_body">Choose a layout to start driving.</string>
-    <string name="drive_failed_title">Couldn\'t connect</string>
-    <string name="drive_failed_body">The last connection failed. Try again or choose another layout.</string>
     <string name="drive_find_layout">Find your layout</string>
-
     <string name="drive_connecting_title">Connecting</string>
     <string name="drive_connecting_body">Opening a session with %1$s.</string>
-    <string name="drive_reconnecting_title">Reconnecting</string>
-    <string name="drive_reconnecting_body">Trying to reach %1$s again (attempt %2$d).</string>
-
-    <string name="drive_stop">Stop train</string>
-    <string name="drive_connection_action">Open connection</string>
-    <string name="drive_disconnect">Disconnect</string>
-    <string name="drive_cancel_connection">Cancel</string>
-    <string name="drive_more_actions">More actions</string>
 </resources>

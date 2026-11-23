@@ -3,21 +3,24 @@
 OpenCab is a production-grade Android scaffold for a model-railroad cab controller. This
 milestone establishes the build, module boundaries, theme, dependency injection, persistence
 foundations, an adaptive navigation shell, a pure-Kotlin WiThrottle protocol core, the connection
-gate (mDNS discovery, saved layouts, manual entry, and a live socket handshake), and the multi-slot
-throttle domain engine. The Compose throttle UI remains intentionally absent until Step 7.
+gate (mDNS discovery, saved layouts, manual entry, and a live socket handshake), the multi-slot
+throttle domain engine, and the hero drive screen.
 
 ## Status
 
 The app builds, launches into the **Connect** gate, and finds WiThrottle servers. The design system
 provides a branded Material 3 theme with opt-in dynamic colour, tabular numeric readouts, shared
-status/control components, and an adaptive navigation shell. Drive shows the live link state but
-remains a throttle placeholder until Step 7.
+status/control components, and an adaptive navigation shell. Drive is now the hero throttle: a
+grab-the-handle lever, step readout, direction control, large Stop, press-and-hold functions, and
+inline link-loss states, laid out for one-handed use in portrait, landscape, and tablet.
 
-`:core:data` now also contains the `ThrottleController` engine: multiple desired slots, immutable
+`:core:data` contains the `ThrottleController` engine: multiple desired slots, immutable
 `ThrottleUiState`, acquisition/steal/release, 10 Hz speed coalescing with a guaranteed trailing
 value, priority stop/E-stop, disconnect/stale/re-acquire, per-loco E-stop, and functions 0–28.
-Its API and deterministic virtual-time tests are documented in
-[`docs/throttle-engine.md`](docs/throttle-engine.md).
+`ThrottleSession` attaches the engine to the live connection and exposes the single-slot action
+surface used by the drive screen. Its API and deterministic virtual-time tests are documented in
+[`docs/throttle-engine.md`](docs/throttle-engine.md); the screen is documented in
+[`docs/drive-screen.md`](docs/drive-screen.md).
 
 `:core:protocol` now contains the WiThrottle line codec, typed commands and events, and a pure
 session reducer. It has no Android, socket, thread, clock, or coroutine dependency and is covered
@@ -127,6 +130,13 @@ Run the throttle-engine virtual-time tests:
 ./gradlew :core:data:testDebugUnitTest --tests 'dev.opencab.core.data.throttle.*'
 ```
 
+Run the drive-screen mapping tests, and the gesture/state Compose tests on a device:
+
+```bash
+./gradlew :feature:throttle:testDebugUnitTest
+./gradlew :feature:throttle:connectedDebugAndroidTest
+```
+
 Every shared component and feature screen carries a `@CabPreview` matrix: light/dark, 100 %/200 %
 font, phone portrait, phone landscape, and tablet. There is no screenshot-test harness configured,
 so previews are the visual review surface; the reasoning is recorded in
@@ -148,7 +158,7 @@ Apply formatting fixes locally:
 | `:core:protocol` | Pure JVM WiThrottle wire codec, typed commands/events, and the deterministic session reducer. No transport or Android imports. |
 | `:core:data` | Hilt modules, DataStore-backed settings and saved layouts, Room roster scaffold, `DccClient` transport port, `WiThrottleClient` (framing, handshake, heartbeat watchdog, reconnect), `NsdManager` discovery, and the multi-slot `ThrottleController` engine. |
 | `:feature:connection` | Connect gate: discovery, permission rationale, saved layouts, manual entry, typed failures, and the Drive hand-off. |
-| `:feature:throttle` | Drive screen composed from `SpeedDisplay`, `StatusPill`, `SectionCard`, and `PrimaryActionButton`; throttle-engine wiring and gestures arrive in Step 7. |
+| `:feature:throttle` | Hero drive screen: loco header, grab-the-handle lever, step/estimate readout, nudge, direction confirmation, Stop, press-and-hold functions, inline link-loss/issue states, and the `DriveViewModel` that maps `ThrottleSession` state. |
 | `:feature:roster` | Roster empty state composed from the design system; no roster logic yet. |
 | `:feature:settings` | Theme selection backed by DataStore, plus connection and about entries. |
 
@@ -200,9 +210,12 @@ layer.
   intents and client events through one actor, reuses `SessionReducer` for acquisition/function
   state, coalesces speed writes to 10 Hz with a guaranteed trailing value, gives stop and per-loco
   E-stop priority, and keeps stale slots visible but disabled across disconnect. Reconnect
-  automatically re-acquires desired slots and commands speed zero before control returns. The UI
-  contract, lifecycle, and virtual-time tests are in
-  [`docs/throttle-engine.md`](docs/throttle-engine.md).
+  automatically re-acquires desired slots and commands speed zero before control returns.
+  `ThrottleSession` attaches the engine to `ConnectionRepository.activeClient`, exposes single-slot
+  actions without leaking protocol types to the UI, and therefore survives a socket reconnect. The
+  UI contract, lifecycle, and virtual-time tests are in
+  [`docs/throttle-engine.md`](docs/throttle-engine.md). The screen's interaction, accessibility, and
+  performance contract is in [`docs/drive-screen.md`](docs/drive-screen.md).
 - **Local-network permission.** With `targetSdk = 36`, LAN access is implicit through `INTERNET`;
   no local-network permission is declared or requested. Targeting SDK 37+ will require
   `android.permission.ACCESS_LOCAL_NETWORK`. Blocked traffic still maps to a typed
@@ -216,10 +229,12 @@ layer.
 ## Intentionally not implemented
 
 - DCC, LocoNet, XpressNet, or any other command-station transport
-- Compose throttle gestures, multi-throttle UI, and linked consists
+- Roster-driven acquisition (the drive screen renders an acquired slot; Step 8 supplies it)
+- Multi-throttle UI, app-side linking, and linked consists
+- Calibration, speed-cap, hold-to-run, and haptic-intensity settings (the UI accepts the values)
 - Process-death restoration of open throttle slots
 - Roster CRUD beyond the empty database scaffold
-- Diagnostics log export and the settings that will tune reconnect/haptics
+- Diagnostics log export and the remaining settings that tune reconnect behaviour
 
 ## Continuous integration
 
