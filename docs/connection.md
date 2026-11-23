@@ -142,7 +142,8 @@ All transport failures map to `ConnectionError` (`TimedOut`, `ServerClosed`, `Un
   the platform default network when a layout AP has no internet, so a discovered result is not
   guaranteed on every AP. The socket itself is bound to Wi-Fi/Ethernet (`AndroidNetworkBinder`).
 - Reconnect and heartbeat behaviour is implemented at the link level. Throttle-level re-acquire,
-  speed reconciliation, and the 10 Hz command coalescer belong to Step 6. The outbound channel is
-  bounded and drops commands while disconnected; Step 6 owns re-acquire and coalescing.
+  speed reconciliation, and the 10 Hz command coalescer live in the `ThrottleController` engine
+  described in [`throttle-engine.md`](throttle-engine.md). The outbound channel is bounded and drops
+  commands while disconnected; the engine owns re-acquire and coalescing.
 - Diagnostics/log export, per-layout deletion confirmation, and permission rationale analytics are
   later-step work. There is no analytics.

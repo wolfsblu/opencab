@@ -2,9 +2,9 @@
 
 OpenCab is a production-grade Android scaffold for a model-railroad cab controller. This
 milestone establishes the build, module boundaries, theme, dependency injection, persistence
-foundations, an adaptive navigation shell, a pure-Kotlin WiThrottle protocol core, and the
-connection gate: mDNS discovery, saved layouts, manual entry, and a live socket handshake.
-Throttle state and throttle UI logic remain intentionally absent.
+foundations, an adaptive navigation shell, a pure-Kotlin WiThrottle protocol core, the connection
+gate (mDNS discovery, saved layouts, manual entry, and a live socket handshake), and the multi-slot
+throttle domain engine. The Compose throttle UI remains intentionally absent until Step 7.
 
 ## Status
 
@@ -12,6 +12,12 @@ The app builds, launches into the **Connect** gate, and finds WiThrottle servers
 provides a branded Material 3 theme with opt-in dynamic colour, tabular numeric readouts, shared
 status/control components, and an adaptive navigation shell. Drive shows the live link state but
 remains a throttle placeholder until Step 7.
+
+`:core:data` now also contains the `ThrottleController` engine: multiple desired slots, immutable
+`ThrottleUiState`, acquisition/steal/release, 10 Hz speed coalescing with a guaranteed trailing
+value, priority stop/E-stop, disconnect/stale/re-acquire, per-loco E-stop, and functions 0–28.
+Its API and deterministic virtual-time tests are documented in
+[`docs/throttle-engine.md`](docs/throttle-engine.md).
 
 `:core:protocol` now contains the WiThrottle line codec, typed commands and events, and a pure
 session reducer. It has no Android, socket, thread, clock, or coroutine dependency and is covered
@@ -115,6 +121,12 @@ Run the connection infrastructure and connection-screen unit tests:
 ./gradlew :core:data:testDebugUnitTest :feature:connection:testDebugUnitTest
 ```
 
+Run the throttle-engine virtual-time tests:
+
+```bash
+./gradlew :core:data:testDebugUnitTest --tests 'dev.opencab.core.data.throttle.*'
+```
+
 Every shared component and feature screen carries a `@CabPreview` matrix: light/dark, 100 %/200 %
 font, phone portrait, phone landscape, and tablet. There is no screenshot-test harness configured,
 so previews are the visual review surface; the reasoning is recorded in
@@ -134,9 +146,9 @@ Apply formatting fixes locally:
 | `:core:designsystem` | `CabTheme` and design tokens (colour, tabular type, shape, spacing, elevation, motion, haptics), shared components, adaptive navigation shell, predictive-back container, and the preview matrix. |
 | `:core:model` | Plain Kotlin domain types such as connection state and roster entries. |
 | `:core:protocol` | Pure JVM WiThrottle wire codec, typed commands/events, and the deterministic session reducer. No transport or Android imports. |
-| `:core:data` | Hilt modules, DataStore-backed settings and saved layouts, Room roster scaffold, `DccClient` transport port, `WiThrottleClient` (framing, handshake, heartbeat watchdog, reconnect), and `NsdManager` discovery. |
+| `:core:data` | Hilt modules, DataStore-backed settings and saved layouts, Room roster scaffold, `DccClient` transport port, `WiThrottleClient` (framing, handshake, heartbeat watchdog, reconnect), `NsdManager` discovery, and the multi-slot `ThrottleController` engine. |
 | `:feature:connection` | Connect gate: discovery, permission rationale, saved layouts, manual entry, typed failures, and the Drive hand-off. |
-| `:feature:throttle` | Drive screen composed from `SpeedDisplay`, `StatusPill`, `SectionCard`, and `PrimaryActionButton`; no throttle logic yet. |
+| `:feature:throttle` | Drive screen composed from `SpeedDisplay`, `StatusPill`, `SectionCard`, and `PrimaryActionButton`; throttle-engine wiring and gestures arrive in Step 7. |
 | `:feature:roster` | Roster empty state composed from the design system; no roster logic yet. |
 | `:feature:settings` | Theme selection backed by DataStore, plus connection and about entries. |
 
@@ -184,6 +196,13 @@ layer.
   `ConnectionUiState` and typed `ConnectionError` values; it has no socket or protocol imports.
   Exact state mapping, fake-server test coverage, and permission notes are in
   [`docs/connection.md`](docs/connection.md).
+- **Throttle engine.** `:core:data` owns the `ThrottleController` domain engine. It serializes UI
+  intents and client events through one actor, reuses `SessionReducer` for acquisition/function
+  state, coalesces speed writes to 10 Hz with a guaranteed trailing value, gives stop and per-loco
+  E-stop priority, and keeps stale slots visible but disabled across disconnect. Reconnect
+  automatically re-acquires desired slots and commands speed zero before control returns. The UI
+  contract, lifecycle, and virtual-time tests are in
+  [`docs/throttle-engine.md`](docs/throttle-engine.md).
 - **Local-network permission.** With `targetSdk = 36`, LAN access is implicit through `INTERNET`;
   no local-network permission is declared or requested. Targeting SDK 37+ will require
   `android.permission.ACCESS_LOCAL_NETWORK`. Blocked traffic still maps to a typed
@@ -197,7 +216,8 @@ layer.
 ## Intentionally not implemented
 
 - DCC, LocoNet, XpressNet, or any other command-station transport
-- Throttle state, speed coalescing, gesture handling, and function control
+- Compose throttle gestures, multi-throttle UI, and linked consists
+- Process-death restoration of open throttle slots
 - Roster CRUD beyond the empty database scaffold
 - Diagnostics log export and the settings that will tune reconnect/haptics
 
