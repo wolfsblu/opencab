@@ -95,7 +95,10 @@ credentials, so none are stored.
 `trySend`), an inbound `Flow<WiThrottleEvent>`, `state`, and `close`. `WiThrottleClient` owns one
 socket session and runs on `Dispatchers.IO`:
 
-1. `Connecting`, then TCP connect with a 4-second timeout.
+1. `Connecting`, select the Wi-Fi/Ethernet network and bind the socket to it, then TCP connect with
+   a 4-second timeout. This is required when a layout's access point has no internet: Android
+   keeps cellular as the default network, so an unbound socket would otherwise leave through
+   cellular and never reach `192.168.4.x`. Hostnames are resolved through the selected network.
 2. Send `HU…` and `N…`, read bytes through the incremental decoder, and wait up to 5 seconds for
    `VN`. A version below 2.0 becomes `UnsupportedVersion`; a non-WiThrottle message becomes
    `ProtocolMismatch`.
@@ -148,7 +151,9 @@ socket, mDNS, or permission is used.
 
 ## Known limits
 
-- mDNS remains best-effort; manual entry is the guaranteed path.
+- mDNS remains best-effort; manual entry is the guaranteed path. `NsdManager` may still browse on
+  the platform default network when a layout AP has no internet, so a discovered result is not
+  guaranteed on every AP. The socket itself is bound to Wi-Fi/Ethernet (`AndroidNetworkBinder`).
 - Reconnect and heartbeat behaviour is implemented at the link level. Throttle-level re-acquire,
   speed reconciliation, and the 10 Hz command coalescer belong to Step 6. The outbound channel is
   bounded and drops commands while disconnected; Step 6 owns re-acquire and coalescing.

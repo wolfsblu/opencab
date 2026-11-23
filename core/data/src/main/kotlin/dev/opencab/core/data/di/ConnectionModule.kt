@@ -4,11 +4,13 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.opencab.core.data.connection.AndroidNetworkBinder
 import dev.opencab.core.data.connection.ConnectionRepository
 import dev.opencab.core.data.connection.DataStoreSavedServerStore
 import dev.opencab.core.data.connection.DccClientFactory
 import dev.opencab.core.data.connection.DefaultConnectionRepository
 import dev.opencab.core.data.connection.DefaultDccClientFactory
+import dev.opencab.core.data.connection.NetworkBinder
 import dev.opencab.core.data.connection.NsdServerDiscovery
 import dev.opencab.core.data.connection.SavedServerStore
 import dev.opencab.core.data.connection.ServerDiscovery
@@ -40,4 +42,10 @@ abstract class ConnectionModule {
     abstract fun bindDccClientFactory(
         implementation: DefaultDccClientFactory,
     ): DccClientFactory
+
+    @Binds
+    @Singleton
+    abstract fun bindNetworkBinder(
+        implementation: AndroidNetworkBinder,
+    ): NetworkBinder
 }

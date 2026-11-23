@@ -5,6 +5,8 @@ import javax.inject.Singleton
 
 /** Production factory: a fresh [WiThrottleClient] per connection attempt. */
 @Singleton
-class DefaultDccClientFactory @Inject constructor() : DccClientFactory {
-    override fun create(): DccClient = WiThrottleClient()
+class DefaultDccClientFactory @Inject constructor(
+    private val networkBinder: NetworkBinder,
+) : DccClientFactory {
+    override fun create(): DccClient = WiThrottleClient(networkBinder = networkBinder)
 }

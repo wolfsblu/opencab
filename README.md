@@ -178,7 +178,9 @@ layer.
   mappings, version gates, and the supported/unsupported matrix are in [`docs/protocol.md`](docs/protocol.md).
 - **Connection boundary.** `:core:data` owns the `DccClient` port, the live socket, the client
   greeting, the version gate, link-level heartbeats and watchdog, capped reconnect backoff with
-  jitter, discovery, saved layouts, and the scripted demo server. `:feature:connection` sees only
+  jitter, discovery, saved layouts, and the scripted demo server. `AndroidNetworkBinder` binds
+  throttle sockets to the active Wi-Fi/Ethernet network so layout access points without internet
+  are reachable while cellular remains Android's default route. `:feature:connection` sees only
   `ConnectionUiState` and typed `ConnectionError` values; it has no socket or protocol imports.
   Exact state mapping, fake-server test coverage, and permission notes are in
   [`docs/connection.md`](docs/connection.md).

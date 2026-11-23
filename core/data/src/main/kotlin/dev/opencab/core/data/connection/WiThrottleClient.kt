@@ -58,6 +58,7 @@ import java.net.UnknownHostException
 class WiThrottleClient(
     private val config: DccClientConfig = DccClientConfig(),
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val networkBinder: NetworkBinder = NetworkBinder.Direct,
 ) : DccClient {
     private val lock = Any()
     private val reconnectPolicy = ReconnectPolicy.from(config)
@@ -208,10 +209,10 @@ class WiThrottleClient(
         try {
             socket.tcpNoDelay = true
             socket.keepAlive = true
-            socket.connect(
-                InetSocketAddress(endpoint.host.removeSurrounding("[", "]"), endpoint.port),
-                config.connectTimeoutMillis,
-            )
+            val host = endpoint.host.removeSurrounding("[", "]")
+            val address = networkBinder.bind(socket, host, endpoint.port)
+                ?: InetSocketAddress(host, endpoint.port)
+            socket.connect(address, config.connectTimeoutMillis)
             socket.soTimeout = config.readTimeoutMillis
 
             val connection = Connection(

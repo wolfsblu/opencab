@@ -17,6 +17,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.net.InetSocketAddress
 import java.util.Collections
 import kotlin.random.Random
 
@@ -150,6 +151,35 @@ class WiThrottleClientTest {
                     it is DccConnectionState.Connected
                 }
             }
+
+            client.close()
+            connectJob.join()
+        }
+    }
+
+    @Test
+    fun bindsTheSocketToTheLocalNetworkBeforeConnecting() = runBlocking {
+        FakeTcpServer { connection ->
+            connection.awaitLine("HUopencab-android")
+            connection.awaitLine("NOpenCab")
+            connection.send("VN2.0")
+            connection.awaitClose()
+        }.use { server ->
+            var boundHost: String? = null
+            var boundPort: Int? = null
+            val binder = NetworkBinder { _, host, port ->
+                boundHost = host
+                boundPort = port
+                InetSocketAddress("127.0.0.1", port)
+            }
+            val client = WiThrottleClient(testConfig(), networkBinder = binder)
+            val connectJob = launch(Dispatchers.IO) { client.connect(server.endpoint) }
+
+            withTimeout(TIMEOUT_MILLIS) {
+                client.state.first { it is DccConnectionState.Connected }
+            }
+            assertEquals("127.0.0.1", boundHost)
+            assertEquals(server.endpoint.port, boundPort)
 
             client.close()
             connectJob.join()
