@@ -1,44 +1,67 @@
 package dev.opencab.feature.connection
 
-/** Every user intent the connection screen can emit. */
+/**
+ * Every user intent the connection screen can emit.
+ *
+ * The marker categories keep the route's dispatch split into small, readable handlers instead of
+ * one large `when` and let the compiler keep each handler exhaustive.
+ */
 internal sealed interface ConnectionAction {
-    data object Back : ConnectionAction
+    /** Leaves or changes the screen. */
+    sealed interface Navigation : ConnectionAction
 
-    data object Rescan : ConnectionAction
+    /** Talks to the platform permission APIs or app settings. */
+    sealed interface Permission : ConnectionAction
 
-    data class Connect(val server: ServerCardUiState) : ConnectionAction
+    /** Acts on a discovered or saved server row. */
+    sealed interface Server : ConnectionAction
 
-    data class EditSaved(val server: ServerCardUiState) : ConnectionAction
+    /** Starts, retries, or ends the active link. */
+    sealed interface Link : ConnectionAction
 
-    data class DeleteSaved(val server: ServerCardUiState) : ConnectionAction
+    /** Edits the manual-entry sheet. */
+    sealed interface Manual : ConnectionAction
 
-    data object CancelConnection : ConnectionAction
+    data object Back : Navigation
 
-    data object Retry : ConnectionAction
+    data object Rescan : Server
 
-    data object DismissFailure : ConnectionAction
+    data class Connect(val server: ServerCardUiState) : Server
 
-    data object RequestPermission : ConnectionAction
+    data class EditSaved(val server: ServerCardUiState) : Server
 
-    data object OpenSettings : ConnectionAction
+    data class DeleteSaved(val server: ServerCardUiState) : Server
 
-    data object OpenDrive : ConnectionAction
+    data object CancelConnection : Link
 
-    data object OpenManualEntry : ConnectionAction
+    data object Retry : Link
 
-    data object CancelManualEntry : ConnectionAction
+    data object DismissFailure : Link
 
-    data object SubmitManualEntry : ConnectionAction
+    data object Disconnect : Link
 
-    data object StartDemo : ConnectionAction
+    data object RequestPermission : Permission
 
-    data object EndDemo : ConnectionAction
+    data object OpenSettings : Permission
+
+    data object OpenDrive : Navigation
+
+    data object OpenManualEntry : Manual
+
+    data object CancelManualEntry : Manual
+
+    data object SubmitManualEntry : Manual
+
+    data object StartDemo : Link
+
+    data object EndDemo : Link
 }
 
 /** Stable tags used by Compose UI tests and previews. */
 object ConnectionTestTags {
     const val SCREEN: String = "screen_connection"
     const val SCANNING: String = "connection_scanning"
+    const val EMPTY: String = "connection_empty"
     const val PERMISSION: String = "connection_permission"
     const val PERMISSION_DENIED: String = "connection_permission_denied"
     const val PERMISSION_ALLOW: String = "connection_permission_allow"
@@ -56,6 +79,7 @@ object ConnectionTestTags {
     const val START_DEMO: String = "connection_start_demo"
     const val SERVER_LIST: String = "connection_server_list"
     const val OPEN_DRIVE: String = "connection_open_drive"
+    const val DISCONNECT: String = "connection_disconnect"
     const val RETRY: String = "connection_retry"
     const val CANCEL: String = "connection_cancel"
 }

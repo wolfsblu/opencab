@@ -1,6 +1,8 @@
 package dev.opencab.feature.connection
 
+import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,51 +52,108 @@ fun ConnectionRoute(
     ConnectionScreen(
         uiState = uiState,
         onAction = { action ->
-            when (action) {
-                ConnectionAction.Back -> onBack()
-
-                ConnectionAction.Rescan -> viewModel.onRescan()
-
-                is ConnectionAction.Connect -> viewModel.onConnect(action.server)
-
-                is ConnectionAction.EditSaved -> viewModel.onEditSaved(action.server)
-
-                is ConnectionAction.DeleteSaved -> viewModel.onDeleteSaved(action.server)
-
-                ConnectionAction.CancelConnection -> viewModel.onCancelConnection()
-
-                ConnectionAction.Retry -> viewModel.onRetry()
-
-                ConnectionAction.DismissFailure -> viewModel.onDismissFailure()
-
-                ConnectionAction.RequestPermission -> {
-                    val permission = LocalNetworkPermission.requiredPermission(context)
-                    if (permission == null) {
-                        viewModel.onPermissionResult(granted = true)
-                    } else {
-                        permissionLauncher.launch(permission)
-                    }
-                }
-
-                ConnectionAction.OpenSettings ->
-                    LocalNetworkPermission.openSettings(context)
-
-                ConnectionAction.OpenDrive -> onOpenDrive()
-
-                ConnectionAction.OpenManualEntry -> viewModel.onOpenManualEntry()
-
-                ConnectionAction.CancelManualEntry -> viewModel.onCancelManualEntry()
-
-                ConnectionAction.SubmitManualEntry -> viewModel.onSubmitManualEntry()
-
-                ConnectionAction.StartDemo -> viewModel.onStartDemo()
-
-                ConnectionAction.EndDemo -> viewModel.onEndDemo()
-            }
+            dispatchAction(
+                action = action,
+                viewModel = viewModel,
+                permissionLauncher = permissionLauncher,
+                context = context,
+                onBack = onBack,
+                onOpenDrive = onOpenDrive,
+            )
         },
         onManualNameChange = viewModel::onManualNameChanged,
         onManualHostChange = viewModel::onManualHostChanged,
         onManualPortChange = viewModel::onManualPortChanged,
         modifier = modifier,
     )
+}
+
+private fun dispatchAction(
+    action: ConnectionAction,
+    viewModel: ConnectionViewModel,
+    permissionLauncher: ActivityResultLauncher<String>,
+    context: Context,
+    onBack: () -> Unit,
+    onOpenDrive: () -> Unit,
+) {
+    when (action) {
+        is ConnectionAction.Navigation -> handleNavigation(action, onBack, onOpenDrive)
+
+        is ConnectionAction.Permission ->
+            handlePermission(action, viewModel, permissionLauncher, context)
+
+        is ConnectionAction.Server -> handleServer(action, viewModel)
+
+        is ConnectionAction.Link -> handleLink(action, viewModel)
+
+        is ConnectionAction.Manual -> handleManual(action, viewModel)
+    }
+}
+
+private fun handleNavigation(
+    action: ConnectionAction.Navigation,
+    onBack: () -> Unit,
+    onOpenDrive: () -> Unit,
+) {
+    when (action) {
+        ConnectionAction.Back -> onBack()
+        ConnectionAction.OpenDrive -> onOpenDrive()
+    }
+}
+
+private fun handlePermission(
+    action: ConnectionAction.Permission,
+    viewModel: ConnectionViewModel,
+    permissionLauncher: ActivityResultLauncher<String>,
+    context: Context,
+) {
+    when (action) {
+        ConnectionAction.RequestPermission -> {
+            val permission = LocalNetworkPermission.requiredPermission(context)
+            if (permission == null) {
+                viewModel.onPermissionResult(granted = true)
+            } else {
+                permissionLauncher.launch(permission)
+            }
+        }
+
+        ConnectionAction.OpenSettings -> LocalNetworkPermission.openSettings(context)
+    }
+}
+
+private fun handleServer(
+    action: ConnectionAction.Server,
+    viewModel: ConnectionViewModel,
+) {
+    when (action) {
+        ConnectionAction.Rescan -> viewModel.onRescan()
+        is ConnectionAction.Connect -> viewModel.onConnect(action.server)
+        is ConnectionAction.EditSaved -> viewModel.onEditSaved(action.server)
+        is ConnectionAction.DeleteSaved -> viewModel.onDeleteSaved(action.server)
+    }
+}
+
+private fun handleLink(
+    action: ConnectionAction.Link,
+    viewModel: ConnectionViewModel,
+) {
+    when (action) {
+        ConnectionAction.CancelConnection -> viewModel.onCancelConnection()
+        ConnectionAction.Retry -> viewModel.onRetry()
+        ConnectionAction.DismissFailure -> viewModel.onDismissFailure()
+        ConnectionAction.Disconnect -> viewModel.onDisconnect()
+        ConnectionAction.StartDemo -> viewModel.onStartDemo()
+        ConnectionAction.EndDemo -> viewModel.onEndDemo()
+    }
+}
+
+private fun handleManual(
+    action: ConnectionAction.Manual,
+    viewModel: ConnectionViewModel,
+) {
+    when (action) {
+        ConnectionAction.OpenManualEntry -> viewModel.onOpenManualEntry()
+        ConnectionAction.CancelManualEntry -> viewModel.onCancelManualEntry()
+        ConnectionAction.SubmitManualEntry -> viewModel.onSubmitManualEntry()
+    }
 }

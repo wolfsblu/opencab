@@ -47,10 +47,12 @@ fun DriveRoute(
     onOpenConnection: () -> Unit,
     modifier: Modifier = Modifier,
     connectionState: ConnectionState = ConnectionState.Disconnected,
+    onDisconnect: () -> Unit = {},
 ) {
     DriveScreen(
         connectionState = connectionState,
         onOpenConnection = onOpenConnection,
+        onDisconnect = onDisconnect,
         modifier = modifier,
     )
 }
@@ -59,6 +61,7 @@ fun DriveRoute(
 internal fun DriveScreen(
     connectionState: ConnectionState,
     onOpenConnection: () -> Unit,
+    onDisconnect: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val status = connectionState.toCabStatus()
@@ -100,6 +103,7 @@ internal fun DriveScreen(
         DriveContent(
             connectionState = connectionState,
             onOpenConnection = onOpenConnection,
+            onDisconnect = onDisconnect,
             contentPadding = contentPadding,
         )
     }
@@ -109,6 +113,7 @@ internal fun DriveScreen(
 private fun DriveContent(
     connectionState: ConnectionState,
     onOpenConnection: () -> Unit,
+    onDisconnect: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     Box(
@@ -142,6 +147,7 @@ private fun DriveContent(
             LinkCard(
                 connectionState = connectionState,
                 onOpenConnection = onOpenConnection,
+                onDisconnect = onDisconnect,
             )
             PrimaryActionButton(
                 text = stringResource(R.string.drive_stop),
@@ -220,6 +226,7 @@ private fun LocomotiveCard(connected: Boolean) {
 private fun LinkCard(
     connectionState: ConnectionState,
     onOpenConnection: () -> Unit,
+    onDisconnect: () -> Unit,
 ) {
     SectionCard(title = stringResource(R.string.drive_link_title)) {
         Text(
@@ -252,11 +259,21 @@ private fun LinkCard(
             style = CabTheme.typography.readout,
             color = CabTheme.colorScheme.onSurfaceVariant,
         )
-        TextButton(
-            onClick = onOpenConnection,
-            modifier = Modifier.testTag("drive_open_connection"),
-        ) {
-            Text(stringResource(R.string.drive_connection_action))
+        Row(horizontalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm)) {
+            TextButton(
+                onClick = onOpenConnection,
+                modifier = Modifier.testTag("drive_open_connection"),
+            ) {
+                Text(stringResource(R.string.drive_connection_action))
+            }
+            if (connectionState is ConnectionState.Connected) {
+                TextButton(
+                    onClick = onDisconnect,
+                    modifier = Modifier.testTag("drive_disconnect"),
+                ) {
+                    Text(stringResource(R.string.drive_disconnect))
+                }
+            }
         }
     }
 }

@@ -55,6 +55,7 @@ class MainActivity : ComponentActivity() {
             CabTheme(darkTheme = darkTheme) {
                 OpenCabApp(
                     connectionState = connectionState,
+                    onDisconnect = { connectionRepository.disconnect() },
                     onExit = { finish() },
                 )
             }

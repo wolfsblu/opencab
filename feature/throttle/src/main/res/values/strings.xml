@@ -19,5 +19,6 @@
     <string name="drive_link_failed">The last connection failed. Open connection to try again.</string>
     <string name="drive_link_disconnected">Connect to a layout to start driving.</string>
     <string name="drive_connection_action">Open connection</string>
+    <string name="drive_disconnect">Disconnect</string>
     <string name="drive_stop">Stop train</string>
 </resources>

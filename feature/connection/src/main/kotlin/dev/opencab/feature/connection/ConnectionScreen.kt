@@ -226,13 +226,22 @@ private fun ConnectedCard(
                 .fillMaxWidth()
                 .testTag(ConnectionTestTags.OPEN_DRIVE),
         )
-        if (demo) {
-            TextButton(
-                onClick = { onAction(ConnectionAction.EndDemo) },
-                modifier = Modifier.align(Alignment.End),
-            ) {
-                Text(stringResource(R.string.connection_demo_end))
-            }
+        TextButton(
+            onClick = {
+                onAction(
+                    if (demo) ConnectionAction.EndDemo else ConnectionAction.Disconnect,
+                )
+            },
+            modifier =
+            Modifier
+                .align(Alignment.End)
+                .testTag(ConnectionTestTags.DISCONNECT),
+        ) {
+            Text(
+                stringResource(
+                    if (demo) R.string.connection_demo_end else R.string.connection_disconnect,
+                ),
+            )
         }
     }
 }

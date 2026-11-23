@@ -120,6 +120,8 @@ class ConnectionScreenTest {
 
         composeRule.onNodeWithTag(ConnectionTestTags.CONNECTED).assertIsDisplayed()
         composeRule.onNodeWithTag(ConnectionTestTags.OPEN_DRIVE).assertIsDisplayed()
+        composeRule.onNodeWithTag(ConnectionTestTags.DISCONNECT).assertIsDisplayed()
+        composeRule.onNodeWithText("Disconnect").assertIsDisplayed()
         composeRule.onNodeWithText("Connected to Junction Yard").assertIsDisplayed()
     }
 

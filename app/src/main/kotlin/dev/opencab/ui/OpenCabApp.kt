@@ -31,6 +31,7 @@ fun OpenCabApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     connectionState: ConnectionState = ConnectionState.Disconnected,
+    onDisconnect: () -> Unit = {},
     onExit: () -> Unit = {},
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -71,6 +72,7 @@ fun OpenCabApp(
                     DriveRoute(
                         connectionState = connectionState,
                         onOpenConnection = { navController.navigate(CONNECTION_ROUTE) },
+                        onDisconnect = onDisconnect,
                     )
                 }
                 composable(ROSTER_ROUTE) {

@@ -63,6 +63,7 @@
     <string name="connection_link_demo_endpoint">Simulated command station</string>
     <string name="connection_link_ready">Drive is ready.</string>
     <string name="connection_link_open_drive">Open Drive</string>
+    <string name="connection_disconnect">Disconnect</string>
     <string name="connection_cancel">Cancel</string>
     <string name="connection_retry">Try again</string>
 

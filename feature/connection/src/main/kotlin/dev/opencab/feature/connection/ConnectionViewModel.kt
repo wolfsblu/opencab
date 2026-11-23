@@ -131,6 +131,10 @@ class ConnectionViewModel @Inject constructor(
         connectionRepository.disconnect()
     }
 
+    fun onDisconnect() {
+        connectionRepository.disconnect()
+    }
+
     fun onStartDemo() {
         connect(ConnectionTarget.demo())
     }

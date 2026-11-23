@@ -119,6 +119,18 @@ class ConnectionViewModelTest {
     }
 
     @Test
+    fun disconnectClearsTheActiveLink() = runTest {
+        val repository = FakeConnectionRepository()
+        val viewModel = viewModel(repository = repository)
+
+        viewModel.onDisconnect()
+        advanceUntilIdle()
+
+        assertEquals(1, repository.disconnectCount)
+        assertNull(viewModel.uiState.value.link)
+    }
+
+    @Test
     fun manualEntryRejectsAnInvalidHostAndPort() = runTest {
         val repository = FakeConnectionRepository()
         val viewModel = viewModel(repository = repository)
