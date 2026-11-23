@@ -1,6 +1,5 @@
 package dev.opencab.core.data.connection
 
-import dev.opencab.core.model.ConnectionMode
 import dev.opencab.core.model.ConnectionState
 import dev.opencab.core.model.ConnectionTarget
 import kotlinx.coroutines.CancellationException
@@ -19,13 +18,12 @@ import javax.inject.Singleton
 /**
  * Owns the single app-wide link.
  *
- * Live sessions use [WiThrottleClient]; demo sessions use [DemoTransport]. The client owns the
- * socket-level state machine and reconnect policy; this repository maps that state into the
- * user-facing [ConnectionState] and keeps it alive across navigation and configuration changes.
+ * The client owns the socket-level state machine and reconnect policy; this repository maps that
+ * state into the user-facing [ConnectionState] and keeps it alive across navigation and
+ * configuration changes.
  */
 @Singleton
 class DefaultConnectionRepository @Inject constructor(
-    private val demoTransport: DemoTransport,
     private val clientFactory: DccClientFactory,
     ioDispatcher: CoroutineDispatcher,
 ) : ConnectionRepository {
@@ -44,18 +42,11 @@ class DefaultConnectionRepository @Inject constructor(
     override fun connect(target: ConnectionTarget) {
         generation += 1
         val attemptGeneration = generation
-        val previousJob = sessionJob
         stopTransport()
         mutableState.value = ConnectionState.Connecting(target)
 
         sessionJob = scope.launch {
-            // A demo transport is a singleton; let the previous session clear before reusing it.
-            previousJob?.join()
-            if (attemptGeneration != generation) return@launch
-            val client = when (target.mode) {
-                ConnectionMode.DEMO -> demoTransport
-                ConnectionMode.LIVE -> clientFactory.create()
-            }
+            val client = clientFactory.create()
             activeClient = client
             try {
                 runClient(target, client, attemptGeneration)

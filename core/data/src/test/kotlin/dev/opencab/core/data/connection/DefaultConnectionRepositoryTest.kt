@@ -16,8 +16,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -81,27 +79,7 @@ class DefaultConnectionRepositoryTest {
         assertTrue(client.closed)
     }
 
-    @Test
-    fun demoModeUsesTheDemoTransport() = runTest {
-        val repository = DefaultConnectionRepository(
-            demoTransport = DemoTransport(),
-            clientFactory = DccClientFactory { error("live client must not be created") },
-            ioDispatcher = UnconfinedTestDispatcher(testScheduler),
-        )
-
-        repository.connect(ConnectionTarget.demo())
-        assertTrue(repository.state.value is ConnectionState.Connecting)
-
-        advanceTimeBy(DemoTransport.CONNECT_DELAY_MILLIS + 1)
-        runCurrent()
-        assertTrue(repository.state.value is ConnectionState.Connected)
-
-        repository.cancel()
-        assertTrue(repository.state.value is ConnectionState.Disconnected)
-    }
-
     private fun TestScope.repository(client: FakeDccClient) = DefaultConnectionRepository(
-        demoTransport = DemoTransport(),
         clientFactory = DccClientFactory { client },
         ioDispatcher = UnconfinedTestDispatcher(testScheduler),
     )

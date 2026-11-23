@@ -7,7 +7,6 @@ import dev.opencab.core.data.connection.ConnectionRepository
 import dev.opencab.core.data.connection.SavedServerStore
 import dev.opencab.core.data.connection.ServerDiscovery
 import dev.opencab.core.model.ConnectionError
-import dev.opencab.core.model.ConnectionMode
 import dev.opencab.core.model.ConnectionState
 import dev.opencab.core.model.ConnectionTarget
 import dev.opencab.core.model.DiscoveredServer
@@ -132,14 +131,6 @@ class ConnectionViewModel @Inject constructor(
     }
 
     fun onDisconnect() {
-        connectionRepository.disconnect()
-    }
-
-    fun onStartDemo() {
-        connect(ConnectionTarget.demo())
-    }
-
-    fun onEndDemo() {
         connectionRepository.disconnect()
     }
 
@@ -281,7 +272,6 @@ class ConnectionViewModel @Inject constructor(
     }
 
     private suspend fun rememberConnection(target: ConnectionTarget) {
-        if (target.mode != ConnectionMode.LIVE) return
         runCatching {
             savedServerStore.recordConnected(
                 name = target.name,

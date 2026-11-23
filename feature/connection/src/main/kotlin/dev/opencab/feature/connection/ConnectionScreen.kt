@@ -4,24 +4,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,11 +30,11 @@ import dev.opencab.core.designsystem.component.EmptyState
 import dev.opencab.core.designsystem.component.InlineError
 import dev.opencab.core.designsystem.component.PrimaryActionButton
 import dev.opencab.core.designsystem.component.PrimaryActionSize
+import dev.opencab.core.designsystem.component.SecondaryActionButton
 import dev.opencab.core.designsystem.component.SectionCard
 import dev.opencab.core.designsystem.component.StatusPill
 import dev.opencab.core.designsystem.theme.CabTheme
 import dev.opencab.core.model.ConnectionError
-import dev.opencab.core.model.ConnectionMode
 
 /**
  * The connection screen. It renders [ConnectionUiState] and emits [ConnectionAction]s; it has no
@@ -80,10 +74,6 @@ internal fun ConnectionScreen(
                     .padding(horizontal = CabTheme.spacing.page, vertical = CabTheme.spacing.md),
                 verticalArrangement = Arrangement.spacedBy(CabTheme.spacing.md),
             ) {
-                if (uiState.isDemoSession) {
-                    DemoBanner()
-                }
-
                 uiState.link?.let { link ->
                     LinkCard(link = link, onAction = onAction)
                 }
@@ -103,8 +93,6 @@ internal fun ConnectionScreen(
                 SavedSection(uiState = uiState, onAction = onAction)
 
                 ManualEntrySection(onAction = onAction)
-
-                DemoSection(uiState = uiState, onAction = onAction)
             }
         }
     }
@@ -125,43 +113,6 @@ private fun ConnectionUiState.topBarStatus(): CabConnectionStatus = when (link?.
     LinkPhase.Connected -> CabConnectionStatus.Connected
     LinkPhase.Connecting, LinkPhase.Reconnecting -> CabConnectionStatus.Reconnecting
     null -> CabConnectionStatus.Offline
-}
-
-@Composable
-private fun DemoBanner() {
-    val extended = CabTheme.extendedColors
-    Surface(
-        modifier =
-        Modifier
-            .fillMaxWidth()
-            .testTag(ConnectionTestTags.DEMO_BANNER),
-        shape = CabTheme.shapes.medium,
-        color = extended.cautionContainer,
-        contentColor = extended.onCautionContainer,
-    ) {
-        Row(
-            modifier = Modifier.padding(CabTheme.spacing.md),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Info,
-                contentDescription = null,
-                modifier = Modifier.size(CabTheme.sizing.iconMedium),
-                tint = extended.caution,
-            )
-            Spacer(Modifier.width(CabTheme.spacing.sm))
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = stringResource(R.string.connection_demo_banner_title),
-                    style = CabTheme.typography.sectionTitle,
-                )
-                Text(
-                    text = stringResource(R.string.connection_demo_banner_body),
-                    style = CabTheme.typography.readoutSmall,
-                )
-            }
-        }
-    }
 }
 
 @Composable
@@ -197,18 +148,9 @@ private fun ConnectedCard(
     link: LinkUiState,
     onAction: (ConnectionAction) -> Unit,
 ) {
-    val demo = link.target.mode == ConnectionMode.DEMO
     SectionCard(
-        title = if (demo) {
-            stringResource(R.string.connection_link_connected_demo)
-        } else {
-            stringResource(R.string.connection_link_connected, link.target.name)
-        },
-        subtitle = if (demo) {
-            stringResource(R.string.connection_link_demo_endpoint)
-        } else {
-            link.target.endpoint.display
-        },
+        title = stringResource(R.string.connection_link_connected, link.target.name),
+        subtitle = link.target.endpoint.display,
         modifier = Modifier.testTag(ConnectionTestTags.CONNECTED),
     ) {
         StatusPill(status = CabConnectionStatus.Connected)
@@ -220,29 +162,19 @@ private fun ConnectedCard(
         PrimaryActionButton(
             text = stringResource(R.string.connection_link_open_drive),
             onClick = { onAction(ConnectionAction.OpenDrive) },
-            size = PrimaryActionSize.Large,
             modifier =
             Modifier
                 .fillMaxWidth()
                 .testTag(ConnectionTestTags.OPEN_DRIVE),
         )
-        TextButton(
-            onClick = {
-                onAction(
-                    if (demo) ConnectionAction.EndDemo else ConnectionAction.Disconnect,
-                )
-            },
+        SecondaryActionButton(
+            text = stringResource(R.string.connection_disconnect),
+            onClick = { onAction(ConnectionAction.Disconnect) },
             modifier =
             Modifier
                 .align(Alignment.End)
                 .testTag(ConnectionTestTags.DISCONNECT),
-        ) {
-            Text(
-                stringResource(
-                    if (demo) R.string.connection_demo_end else R.string.connection_disconnect,
-                ),
-            )
-        }
+        )
     }
 }
 
@@ -271,15 +203,14 @@ private fun ProgressCard(
                 modifier = Modifier.padding(start = CabTheme.spacing.sm),
             )
         }
-        TextButton(
+        SecondaryActionButton(
+            text = stringResource(R.string.connection_cancel),
             onClick = onCancel,
             modifier =
             Modifier
                 .align(Alignment.End)
                 .testTag(ConnectionTestTags.CANCEL),
-        ) {
-            Text(stringResource(R.string.connection_cancel))
-        }
+        )
     }
 }
 
@@ -356,12 +287,11 @@ private fun PermissionCard(
                     .fillMaxWidth()
                     .testTag(ConnectionTestTags.PERMISSION_SETTINGS),
             )
-            TextButton(
+            SecondaryActionButton(
+                text = stringResource(R.string.connection_permission_try_again),
                 onClick = { onAction(ConnectionAction.RequestPermission) },
                 modifier = Modifier.align(Alignment.End),
-            ) {
-                Text(stringResource(R.string.connection_permission_try_again))
-            }
+            )
         } else {
             PrimaryActionButton(
                 text = stringResource(R.string.connection_permission_allow),
@@ -372,12 +302,11 @@ private fun PermissionCard(
                     .fillMaxWidth()
                     .testTag(ConnectionTestTags.PERMISSION_ALLOW),
             )
-            TextButton(
+            SecondaryActionButton(
+                text = stringResource(R.string.connection_permission_settings),
                 onClick = { onAction(ConnectionAction.OpenSettings) },
                 modifier = Modifier.align(Alignment.End),
-            ) {
-                Text(stringResource(R.string.connection_permission_settings))
-            }
+            )
         }
     }
 }
@@ -391,13 +320,12 @@ private fun NearbySection(
         SectionHeading(
             title = stringResource(R.string.connection_nearby_title),
             action = {
-                TextButton(
+                SecondaryActionButton(
+                    text = stringResource(R.string.connection_rescan),
                     onClick = { onAction(ConnectionAction.Rescan) },
                     enabled = uiState.permission == PermissionUiState.Granted &&
                         uiState.scanPhase != ScanPhase.Scanning,
-                ) {
-                    Text(stringResource(R.string.connection_rescan))
-                }
+                )
             },
         )
 
@@ -584,67 +512,6 @@ private fun ManualEntrySection(onAction: (ConnectionAction) -> Unit) {
                 .fillMaxWidth()
                 .testTag(ConnectionTestTags.MANUAL_ENTRY),
         )
-    }
-}
-
-@Composable
-private fun DemoSection(
-    uiState: ConnectionUiState,
-    onAction: (ConnectionAction) -> Unit,
-) {
-    val demoLink = uiState.link?.takeIf { it.target.mode == ConnectionMode.DEMO }
-    SectionCard(
-        title = stringResource(R.string.connection_demo_title),
-        subtitle = stringResource(R.string.connection_demo_subtitle),
-    ) {
-        Text(
-            text = stringResource(R.string.connection_demo_body),
-            style = CabTheme.typography.readout,
-            color = CabTheme.colorScheme.onSurfaceVariant,
-        )
-        when {
-            demoLink?.phase == LinkPhase.Connected -> {
-                StatusPill(status = CabConnectionStatus.Connected)
-                Text(
-                    text = stringResource(R.string.connection_demo_running),
-                    style = CabTheme.typography.readout,
-                    color = CabTheme.colorScheme.onSurfaceVariant,
-                )
-                PrimaryActionButton(
-                    text = stringResource(R.string.connection_link_open_drive),
-                    onClick = { onAction(ConnectionAction.OpenDrive) },
-                    size = PrimaryActionSize.Large,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                TextButton(
-                    onClick = { onAction(ConnectionAction.EndDemo) },
-                    modifier = Modifier.align(Alignment.End),
-                ) {
-                    Text(stringResource(R.string.connection_demo_end))
-                }
-            }
-
-            demoLink != null -> {
-                ScanningRow(text = stringResource(R.string.connection_demo_starting))
-                TextButton(
-                    onClick = { onAction(ConnectionAction.CancelConnection) },
-                    modifier = Modifier.align(Alignment.End),
-                ) {
-                    Text(stringResource(R.string.connection_cancel))
-                }
-            }
-
-            else ->
-                PrimaryActionButton(
-                    text = stringResource(R.string.connection_demo_start),
-                    onClick = { onAction(ConnectionAction.StartDemo) },
-                    size = PrimaryActionSize.Large,
-                    modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .testTag(ConnectionTestTags.START_DEMO),
-                )
-        }
     }
 }
 

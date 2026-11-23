@@ -51,10 +51,6 @@ internal sealed interface ConnectionAction {
     data object CancelManualEntry : Manual
 
     data object SubmitManualEntry : Manual
-
-    data object StartDemo : Link
-
-    data object EndDemo : Link
 }
 
 /** Stable tags used by Compose UI tests and previews. */
@@ -70,13 +66,11 @@ object ConnectionTestTags {
     const val RECONNECTING: String = "connection_reconnecting"
     const val FAILED: String = "connection_failed"
     const val CONNECTED: String = "connection_connected"
-    const val DEMO_BANNER: String = "connection_demo_banner"
     const val MANUAL_SHEET: String = "connection_manual_sheet"
     const val MANUAL_HOST: String = "connection_manual_host"
     const val MANUAL_PORT: String = "connection_manual_port"
     const val MANUAL_SUBMIT: String = "connection_manual_submit"
     const val MANUAL_ENTRY: String = "connection_manual_entry"
-    const val START_DEMO: String = "connection_start_demo"
     const val SERVER_LIST: String = "connection_server_list"
     const val OPEN_DRIVE: String = "connection_open_drive"
     const val DISCONNECT: String = "connection_disconnect"

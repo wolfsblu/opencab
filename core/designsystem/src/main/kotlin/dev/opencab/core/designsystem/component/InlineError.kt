@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,12 +76,12 @@ fun InlineError(
                 }
             }
             if (onRetry != null) {
-                TextButton(
+                SecondaryActionButton(
+                    text = retryLabel,
                     onClick = onRetry,
+                    contentColor = CabTheme.colorScheme.onErrorContainer,
                     modifier = Modifier.align(Alignment.End),
-                ) {
-                    Text(text = retryLabel, color = CabTheme.colorScheme.onErrorContainer)
-                }
+                )
             }
         }
     }

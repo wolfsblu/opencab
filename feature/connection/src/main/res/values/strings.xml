@@ -2,7 +2,6 @@
 <resources>
     <string name="connection_title">Connect</string>
     <string name="connection_subtitle">Find your layout</string>
-    <string name="connection_status_offline">Offline</string>
 
     <string name="connection_nearby_title">Nearby layouts</string>
     <string name="connection_nearby_scanning_title">Looking for layouts…</string>
@@ -46,21 +45,9 @@
     <string name="connection_manual_port_required">Enter a port.</string>
     <string name="connection_manual_port_invalid">Enter a port from 1 to 65535.</string>
 
-    <string name="connection_demo_title">Demo mode</string>
-    <string name="connection_demo_subtitle">No layout needed</string>
-    <string name="connection_demo_body">Runs a simulated command station so you can explore OpenCab without Wi-Fi or hardware.</string>
-    <string name="connection_demo_start">Start demo</string>
-    <string name="connection_demo_starting">Starting demo…</string>
-    <string name="connection_demo_running">Demo session running</string>
-    <string name="connection_demo_end">End demo</string>
-    <string name="connection_demo_banner_title">Demo mode</string>
-    <string name="connection_demo_banner_body">Connected to a simulated command station. No real train is attached.</string>
-
     <string name="connection_link_connecting">Connecting to %1$s…</string>
     <string name="connection_link_reconnecting">Reconnecting to %1$s (attempt %2$d)…</string>
     <string name="connection_link_connected">Connected to %1$s</string>
-    <string name="connection_link_connected_demo">Connected to the demo layout</string>
-    <string name="connection_link_demo_endpoint">Simulated command station</string>
     <string name="connection_link_ready">Drive is ready.</string>
     <string name="connection_link_open_drive">Open Drive</string>
     <string name="connection_disconnect">Disconnect</string>
@@ -68,9 +55,7 @@
     <string name="connection_retry">Try again</string>
 
     <string name="connection_server_connecting">Connecting…</string>
-    <string name="connection_server_connected">Connected</string>
     <string name="connection_server_failed">Couldn\'t connect</string>
-    <string name="connection_server_connect">Connect</string>
     <string name="connection_server_drive">Drive</string>
     <string name="connection_server_more">More options</string>
     <string name="connection_server_edit">Edit</string>

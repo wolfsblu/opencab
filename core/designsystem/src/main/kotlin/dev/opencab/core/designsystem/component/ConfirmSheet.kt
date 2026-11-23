@@ -17,7 +17,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -136,15 +135,14 @@ fun ConfirmSheetContent(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm, Alignment.End),
         ) {
-            TextButton(
+            SecondaryActionButton(
+                text = dismissLabel,
                 onClick = onDismiss,
-                modifier = Modifier.heightIn(min = CabTheme.sizing.touchMin),
-            ) {
-                Text(dismissLabel)
-            }
+            )
             Button(
                 onClick = onConfirm,
                 modifier = Modifier.heightIn(min = CabTheme.sizing.touchMin),
+                shape = CabTheme.shapes.pill,
                 colors =
                 if (destructive) {
                     ButtonDefaults.buttonColors(

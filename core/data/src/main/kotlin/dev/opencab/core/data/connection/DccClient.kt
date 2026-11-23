@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 /**
- * The link state machine shared by the live and demo transports.
+ * The link state machine shared by command-station transports.
  *
  * The sequence is `Disconnected → Connecting → Connected`, with `Reconnecting` after an
  * established link drops and `Failed` when a failure cannot be recovered by retrying.

@@ -3,22 +3,26 @@
     <string name="drive_title">Drive</string>
     <string name="drive_subtitle_connecting_to">Connecting to %1$s</string>
     <string name="drive_subtitle_reconnecting">Reconnecting to %1$s (attempt %2$d)</string>
-    <string name="drive_subtitle_demo">Demo layout · simulated</string>
     <string name="drive_subtitle_no_link">No link</string>
-    <string name="drive_demo_banner_title">Demo mode</string>
-    <string name="drive_demo_banner_body">This is a simulated connection. No real train is attached.</string>
+
     <string name="drive_locomotive_title">Locomotive</string>
     <string name="drive_locomotive_subtitle">Not acquired</string>
-    <string name="drive_locomotive_body">Choose a locomotive from the roster once a layout is connected.</string>
     <string name="drive_locomotive_body_connected">Choose a locomotive from the roster to start driving.</string>
-    <string name="drive_link_title">Link</string>
-    <string name="drive_link_connected">Connected to %1$s at %2$s.</string>
-    <string name="drive_link_connected_demo">Connected to the simulated demo layout.</string>
-    <string name="drive_link_connecting">Opening a session with %1$s.</string>
-    <string name="drive_link_reconnecting">Trying to reach %1$s again (attempt %2$d).</string>
-    <string name="drive_link_failed">The last connection failed. Open connection to try again.</string>
-    <string name="drive_link_disconnected">Connect to a layout to start driving.</string>
+
+    <string name="drive_no_link_title">No layout connected</string>
+    <string name="drive_no_link_body">Choose a layout to start driving.</string>
+    <string name="drive_failed_title">Couldn\'t connect</string>
+    <string name="drive_failed_body">The last connection failed. Try again or choose another layout.</string>
+    <string name="drive_find_layout">Find your layout</string>
+
+    <string name="drive_connecting_title">Connecting</string>
+    <string name="drive_connecting_body">Opening a session with %1$s.</string>
+    <string name="drive_reconnecting_title">Reconnecting</string>
+    <string name="drive_reconnecting_body">Trying to reach %1$s again (attempt %2$d).</string>
+
+    <string name="drive_stop">Stop train</string>
     <string name="drive_connection_action">Open connection</string>
     <string name="drive_disconnect">Disconnect</string>
-    <string name="drive_stop">Stop train</string>
+    <string name="drive_cancel_connection">Cancel</string>
+    <string name="drive_more_actions">More actions</string>
 </resources>

@@ -16,7 +16,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -28,6 +27,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.opencab.core.data.settings.AppTheme
 import dev.opencab.core.designsystem.component.CabScaffold
+import dev.opencab.core.designsystem.component.SecondaryActionButton
 import dev.opencab.core.designsystem.component.SectionCard
 import dev.opencab.core.designsystem.preview.CabPreview
 import dev.opencab.core.designsystem.theme.CabTheme
@@ -155,12 +155,11 @@ private fun ConnectionCard(onOpenConnection: () -> Unit) {
             style = CabTheme.typography.readout,
             color = CabTheme.colorScheme.onSurfaceVariant,
         )
-        TextButton(
+        SecondaryActionButton(
+            text = stringResource(R.string.settings_open_connection),
             onClick = onOpenConnection,
             modifier = Modifier.testTag("settings_open_connection"),
-        ) {
-            Text(stringResource(R.string.settings_open_connection))
-        }
+        )
     }
 }
 

@@ -44,7 +44,7 @@ These were the defaults used to draft the sequence:
   later adapters, not v1.
 - **Form factor:** phone-first, with phone landscape and tablets as first-class layouts.
 - **v1 scope:** discover/connect, acquire, drive, functions, multi-throttle, linked consists,
-  roster, settings, diagnostics, and a hardware-free demo mode.
+  roster, settings, and diagnostics.
 - **v1 non-goals:** CV programming, turnout/layout control, routes, accounts, cloud sync,
   iOS.
 
@@ -63,7 +63,7 @@ The original module sketch:
 :core:designsystem     theme, tokens, shared components
 :core:model            domain types, no Android deps
 :core:protocol         WiThrottle codec + session state machine, pure JVM
-:core:data             transport, discovery, persistence, demo transport
+:core:data             transport, discovery, persistence
 :feature:connection
 :feature:throttle
 :feature:roster
@@ -87,8 +87,8 @@ ADR-0001 refines this into `:protocol:withrottle`, `:core:session`, `:core:ui`,
 | 1 | Project scaffold | **Done** | Multi-module Gradle build, CI, adaptive nav shell, theme selection |
 | 2 | Design system and app shell | **Done** | `CabTheme` + branded/high-contrast light/dark palettes, tabular type, shape/spacing/elevation/motion/haptic tokens, all eight shared components, adaptive suite (bottom bar compact / rail medium+expanded), predictive back, six-variant `@CabPreview` matrix, contrast + semantics tests, and `docs/design-system.md`. No screenshot harness is configured; the pinned-version gap is documented. |
 | 3 | WiThrottle protocol core | **Done** | `:core:protocol` contains the incremental line codec, typed commands/events, and pure `SessionReducer`; `docs/protocol.md` records exact mappings, version gates, the supported/unsupported matrix, and known protocol quirks. Golden, captured-transcript, chunk-boundary, round-trip, malformed-input, duplicate/unknown, and reducer-transition tests are in `core/protocol/src/test`. |
-| 4 | Transport, discovery, persistence | **Done** | `:core:data` has the `DccClient` port, `WiThrottleClient` (incremental framing, handshake/version gate, heartbeat watchdog, capped backoff with jitter, typed errors, Wi-Fi/Ethernet socket binding), a validated DataStore saved-layout store, cancelable `NsdManager` discovery, and a scripted `DemoTransport`. Fake-TCP-server tests cover dropped mid-frame links, heartbeat timeout, reconnect, concurrent close, invalid handshake, version mismatch, cancellation, and command round trips. See `docs/connection.md`. |
-| 5 | Connection UX | **Done** | Connect is the navigation gate and shows discovered/saved/manual/demo sections, explicit scanning/timeout/empty/rescan states, local-network rationale with a Settings deep link, server cards with connect/cancel/retry/edit, typed plain-language failures, a validated manual sheet (default 12090), a labelled demo session, immutable ViewModel state, an obvious Drive hand-off, six-state previews, and Compose UI tests. See `docs/connection.md`. |
+| 4 | Transport, discovery, persistence | **Done** | `:core:data` has the `DccClient` port, `WiThrottleClient` (incremental framing, handshake/version gate, heartbeat watchdog, capped backoff with jitter, typed errors, Wi-Fi/Ethernet socket binding), a validated DataStore saved-layout store, and cancelable `NsdManager` discovery. Fake-TCP-server tests cover dropped mid-frame links, heartbeat timeout, reconnect, concurrent close, invalid handshake, version mismatch, cancellation, and command round trips. See `docs/connection.md`. |
+| 5 | Connection UX | **Done** | Connect is the navigation gate and shows discovered/saved/manual sections, explicit scanning/timeout/empty/rescan states, local-network rationale with a Settings deep link, server cards with connect/cancel/retry/edit, typed plain-language failures, a validated manual sheet (default 12090), immutable ViewModel state, an obvious Drive hand-off, six-state previews, and Compose UI tests. See `docs/connection.md`. |
 | 6 | Throttle state engine | **Not started** | — |
 | 7 | Throttle UI | **Scaffold only** | Drive screen styled with `SpeedDisplay`, `StatusPill`, `SectionCard`, and `PrimaryActionButton`; no throttle state or gestures |
 | 8 | Roster and acquisition | **Scaffold only** | Room entity/DAO and a roster empty state styled with the design system |
@@ -261,8 +261,6 @@ Deliver:
   (WiThrottle has none). Validate host/port; default port 12090.
 - Typed error taxonomy mapped to user-safe messages, including network unreachable,
   timeout, protocol mismatch, local-network permission denied, and server closed.
-- DemoTransport: a scripted fake DCC server that supports acquire, speed, functions,
-  disconnect, and reconnect. It must make the whole app usable without hardware.
 - Tests with a fake TCP server: dropped connection mid-frame, heartbeat timeout,
   reconnect, concurrent close, invalid handshake.
 
@@ -279,14 +277,13 @@ Step 5: Connection screen and flow.
 Build :feature:connection and wire it into navigation.
 
 Deliver:
-- Connect route with sections: discovered servers, saved servers, manual entry, demo mode.
+- Connect route with sections: discovered servers, saved servers, and manual entry.
 - Scan on entry with an explicit scanning state, timeout, empty state, and rescan action.
 - Permission rationale for local network access, with a Settings deep link when denied.
 - Server cards showing name, host:port, last connected, and status. Connect in progress,
   cancel, retry, and edit server.
 - Manual entry sheet: host, port, inline validation, correct keyboard types, default 12090.
 - Plain-language error copy with a recovery action, never raw exception text.
-- Demo mode entry that starts a DemoTransport session and clearly labels the UI as demo.
 - ViewModel + immutable UI state; no sockets or protocol code in composables.
 - UI tests and previews for: scanning, empty, permission denied, connecting, failed,
   and connected states.
@@ -410,7 +407,7 @@ Step 10: Settings, diagnostics, accessibility, and localization polish.
 Deliver:
 - DataStore-backed settings: theme (system/light/dark), dynamic color, haptics intensity,
   keep screen awake while driving, default speed steps, scale and units for estimated speed,
-  reconnect behavior, demo mode.
+  reconnect behavior.
 - Diagnostics screen: connection state, protocol log ring buffer (last ~500 lines),
   copy/share, clear, and exported session info. Redact nothing sensitive because there are
   no secrets, but do not log message payloads unnecessarily.
@@ -485,7 +482,7 @@ before protocol work so the codebase does not carry two architectures.
 ## Execution notes
 
 - **Test without hardware from day one.** Run JMRI with a simulated command station and its
-  WiThrottle server. Prompt 4's `DemoTransport` means UI work never waits for a layout.
+  WiThrottle server, or point manual entry at a fake TCP server in tests.
 - **Commit after every prompt** and tag checkpoints (`v0.1-scaffold`, `v0.2-protocol`, …).
   Each prompt is sized to be reviewable on its own.
 - **Biggest risks:** protocol quirks across JMRI versions and command stations; socket

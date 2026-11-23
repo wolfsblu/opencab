@@ -160,6 +160,7 @@ Haptics are gated by the caller's settings toggle and are never the only feedbac
 | `InlineError` | `title`, `message`, `onRetry`, `retryLabel` | Polite live region on the message |
 | `ConfirmSheet` | `visible`, copy, confirm/dismiss callbacks, `destructive` | Modal sheet; heading; explicit cancel |
 | `PrimaryActionButton` | `text`, `onClick`, `enabled`, `loading`, `icon`, `size` | Button; "Loading" state description while busy |
+| `SecondaryActionButton` | `text`, `onClick`, `enabled`, `icon`, `contentColor` | 48 dp text action; keeps secondary rows aligned with primary controls |
 | `CabScaffold` | `title`, `subtitle`, `onBack`, `actions`, content padding | Top bar grows with font scale; back button named |
 | `CabNavigationSuite` | destinations, selection, navigation callback, visibility | Adaptive bottom bar/rail |
 | `CabPredictiveBackContainer` | `enabled`, `onBack`, content | Draws system back progress |
@@ -249,7 +250,7 @@ the existing `@CabPreview` matrix is the input set.
 ```
 core/designsystem/src/main/kotlin/dev/opencab/core/designsystem/
   component/    StatusPill, SpeedDisplay, FunctionKey, SectionCard, EmptyState,
-                InlineError, ConfirmSheet, PrimaryActionButton, CabScaffold
+                InlineError, ConfirmSheet, PrimaryActionButton, SecondaryActionButton, CabScaffold
   navigation/   CabNavigationSuite, CabPredictiveBackContainer
   preview/      CabPreview, CabPreviewSurface
   theme/        Color, CabContrast, Type, Shape, Spacing, Elevation, Motion, Haptics, Theme

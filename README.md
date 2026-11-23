@@ -3,15 +3,15 @@
 OpenCab is a production-grade Android scaffold for a model-railroad cab controller. This
 milestone establishes the build, module boundaries, theme, dependency injection, persistence
 foundations, an adaptive navigation shell, a pure-Kotlin WiThrottle protocol core, and the
-connection gate: mDNS discovery, saved layouts, manual entry, a live socket handshake, and a
-scripted hardware-free demo server. Throttle state and throttle UI logic remain intentionally absent.
+connection gate: mDNS discovery, saved layouts, manual entry, and a live socket handshake.
+Throttle state and throttle UI logic remain intentionally absent.
 
 ## Status
 
-The app builds, launches into the **Connect** gate, and finds WiThrottle servers or opens a demo
-session. The design system provides a branded Material 3 theme with opt-in dynamic colour, tabular
-numeric readouts, shared status/control components, and an adaptive navigation shell. Drive shows
-the live or demo link state but remains a throttle placeholder until Step 7.
+The app builds, launches into the **Connect** gate, and finds WiThrottle servers. The design system
+provides a branded Material 3 theme with opt-in dynamic colour, tabular numeric readouts, shared
+status/control components, and an adaptive navigation shell. Drive shows the live link state but
+remains a throttle placeholder until Step 7.
 
 `:core:protocol` now contains the WiThrottle line codec, typed commands and events, and a pure
 session reducer. It has no Android, socket, thread, clock, or coroutine dependency and is covered
@@ -23,7 +23,7 @@ The design system reference — tokens, components, semantics, preview matrix, a
 pinned Material 3 version — lives in [`docs/design-system.md`](docs/design-system.md).
 
 The connection flow reference — the `DccClient` transport, discovery, permission handling,
-saved layouts, typed errors, reconnect policy, scripted demo server, and state mapping — lives in
+saved layouts, typed errors, reconnect policy, and state mapping — lives in
 [`docs/connection.md`](docs/connection.md).
 
 ## Planning
@@ -134,8 +134,8 @@ Apply formatting fixes locally:
 | `:core:designsystem` | `CabTheme` and design tokens (colour, tabular type, shape, spacing, elevation, motion, haptics), shared components, adaptive navigation shell, predictive-back container, and the preview matrix. |
 | `:core:model` | Plain Kotlin domain types such as connection state and roster entries. |
 | `:core:protocol` | Pure JVM WiThrottle wire codec, typed commands/events, and the deterministic session reducer. No transport or Android imports. |
-| `:core:data` | Hilt modules, DataStore-backed settings and saved layouts, Room roster scaffold, `DccClient` transport port, `WiThrottleClient` (framing, handshake, heartbeat watchdog, reconnect), `NsdManager` discovery, and the scripted demo server. |
-| `:feature:connection` | Connect gate: discovery, permission rationale, saved layouts, manual entry, typed failures, demo mode, and the Drive hand-off. |
+| `:core:data` | Hilt modules, DataStore-backed settings and saved layouts, Room roster scaffold, `DccClient` transport port, `WiThrottleClient` (framing, handshake, heartbeat watchdog, reconnect), and `NsdManager` discovery. |
+| `:feature:connection` | Connect gate: discovery, permission rationale, saved layouts, manual entry, typed failures, and the Drive hand-off. |
 | `:feature:throttle` | Drive screen composed from `SpeedDisplay`, `StatusPill`, `SectionCard`, and `PrimaryActionButton`; no throttle logic yet. |
 | `:feature:roster` | Roster empty state composed from the design system; no roster logic yet. |
 | `:feature:settings` | Theme selection backed by DataStore, plus connection and about entries. |
@@ -170,7 +170,7 @@ layer.
   modal sheets provide their own predictive-back behaviour.
 - **Dependency injection.** Hilt is used across `:app`, `:core:data`, and the feature modules.
   `:core:data` provides the settings repository, saved-layout store, mDNS discovery, the app-scoped
-  connection repository, the demo transport, and the Room database/DAO.
+  connection repository, and the Room database/DAO.
 - **Protocol core.** `:core:protocol` owns the newline-framed WiThrottle codec, typed commands and
   events, and the pure `SessionReducer`. The reducer owns handshake, heartbeat scheduling policy,
   track-power state, and per-loco acquisition state; all time is supplied by the caller. Unknown
@@ -178,7 +178,7 @@ layer.
   mappings, version gates, and the supported/unsupported matrix are in [`docs/protocol.md`](docs/protocol.md).
 - **Connection boundary.** `:core:data` owns the `DccClient` port, the live socket, the client
   greeting, the version gate, link-level heartbeats and watchdog, capped reconnect backoff with
-  jitter, discovery, saved layouts, and the scripted demo server. `AndroidNetworkBinder` binds
+  jitter, discovery, and saved layouts. `AndroidNetworkBinder` binds
   throttle sockets to the active Wi-Fi/Ethernet network so layout access points without internet
   are reachable while cellular remains Android's default route. `:feature:connection` sees only
   `ConnectionUiState` and typed `ConnectionError` values; it has no socket or protocol imports.
@@ -190,7 +190,7 @@ layer.
   `ConnectionError.LocalNetworkPermissionDenied`.
 - **Persistence.** DataStore stores the selected app theme and saved layouts (name, host, port, last
   connected). Room contains a single scaffolded `saved_loco` table and DAO for the future roster,
-  with schema export enabled. Demo sessions are never persisted.
+  with schema export enabled.
 - **Quality gates.** `./gradlew check` runs unit tests, lint, detekt, and Spotless. The GitHub
   Actions workflow runs the same checks and assembles the debug APK and instrumentation test APK.
 

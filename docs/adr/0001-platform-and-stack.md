@@ -277,8 +277,8 @@ The decision is only real if these exist by the end of Step 1:
 - **Decision.** The Step 4 connection infrastructure required by the Step 5 screen lives in
   `:core:data`, not in a separate `:protocol:withrottle` adapter: the `DccClient` port,
   `WiThrottleClient` (incremental framing, greeting, version gate, heartbeat watchdog, capped
-  backoff with jitter), `NsdManager` discovery, the DataStore saved-layout store, the scripted
-  `DemoTransport`, and the app-scoped `ConnectionRepository`. `DccClient` currently speaks the
+  backoff with jitter), `NsdManager` discovery, the DataStore saved-layout store, and the
+  app-scoped `ConnectionRepository`. `DccClient` currently speaks the
   WiThrottle vocabulary because there is one adapter; the interface is the seam for a future
   protocol-agnostic port.
 - **Boundary.** `:feature:connection` depends on `:core:data` and `:core:model`, never on
@@ -295,7 +295,7 @@ The decision is only real if these exist by the end of Step 1:
   text.
 - **Drive hand-off.** The nav graph now starts at `CONNECTION_ROUTE`. Once the repository reports
   `Connected`, the gate is removed from the back stack and Drive becomes the visible destination.
-  Drive reads the same repository, so its link state and demo banner cannot disagree with Connect.
+  Drive reads the same repository, so its link state cannot disagree with Connect.
 - **Revisit when.** A second protocol is funded, or Step 6 needs a session layer between the
   repository and the throttle engine. At that point the transport can move behind a protocol port
   without changing the connection screen.

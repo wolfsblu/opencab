@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import dev.opencab.core.designsystem.preview.CabPreview
 import dev.opencab.core.designsystem.theme.CabTheme
 import dev.opencab.core.model.ConnectionError
-import dev.opencab.core.model.ConnectionMode
 import dev.opencab.core.model.ConnectionTarget
 import dev.opencab.core.model.ServerEndpoint
 
@@ -114,23 +113,6 @@ private fun ConnectedPreview() {
                     .copy(status = ServerStatus.Connected),
                 savedServer("Home", testBench, lastConnectedHoursAgo = 240),
             ),
-            link = LinkUiState(target = target, phase = LinkPhase.Connected),
-        ),
-    )
-}
-
-@CabPreview
-@Composable
-private fun DemoConnectedPreview() {
-    val target = ConnectionTarget(
-        name = ConnectionTarget.DEMO_NAME,
-        endpoint = ServerEndpoint("demo", ServerEndpoint.DEFAULT_PORT),
-        mode = ConnectionMode.DEMO,
-    )
-    Preview(
-        ConnectionUiState(
-            permission = PermissionUiState.Denied,
-            scanPhase = ScanPhase.Complete,
             link = LinkUiState(target = target, phase = LinkPhase.Connected),
         ),
     )

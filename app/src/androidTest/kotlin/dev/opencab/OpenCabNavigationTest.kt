@@ -43,18 +43,16 @@ class OpenCabNavigationTest {
     }
 
     @Test
-    fun demoModeIsTheObviousRouteIntoDrive() {
-        composeRule.onNodeWithTag(ConnectionTestTags.START_DEMO)
+    fun manualEntryOpensFromTheGate() {
+        composeRule.onNodeWithTag(ConnectionTestTags.MANUAL_ENTRY)
             .performScrollTo()
             .performClick()
 
         composeRule.waitUntilAtLeastOneExists(
-            matcher = hasTestTag("screen_drive"),
+            matcher = hasTestTag(ConnectionTestTags.MANUAL_SHEET),
             timeoutMillis = 10_000,
         )
 
-        composeRule.onNodeWithTag("screen_drive").assertIsDisplayed()
-        composeRule.onNodeWithTag("drive_demo_banner").assertIsDisplayed()
-        composeRule.onNodeWithTag(OpenCabTestTags.NAV_DRIVE).assertIsDisplayed()
+        composeRule.onNodeWithTag(ConnectionTestTags.MANUAL_SHEET).assertIsDisplayed()
     }
 }

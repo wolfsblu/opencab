@@ -3,14 +3,14 @@
 **Status:** Steps 4–5 implementation · **Related:** [`ux/ux-spec.md`](ux/ux-spec.md) §4.1, §6.1–6.3 · [`adr/0001-platform-and-stack.md`](adr/0001-platform-and-stack.md)
 
 The connection gate is the only way into the app. It discovers WiThrottle servers, remembers layouts,
-accepts manual addresses, and can start a hardware-free demo session. It owns no throttle logic.
+and accepts manual addresses. It owns no throttle logic.
 
 ## Module boundaries
 
 | Layer | Responsibility |
 | --- | --- |
 | `:core:model` | `ServerEndpoint`, `SavedServer`, `DiscoveredServer`, `ConnectionTarget`, `ConnectionState`, and the user-safe `ConnectionError` taxonomy. No Android dependencies. |
-| `:core:data` | `DccClient` transport port, `WiThrottleClient` (socket, handshake, heartbeat, reconnect), `ServerDiscovery` (`NsdManager`), `SavedServerStore` (DataStore), `ConnectionRepository` (link lifecycle), and the scripted `DemoTransport`. Protocol types stay below the feature boundary. |
+| `:core:data` | `DccClient` transport port, `WiThrottleClient` (socket, handshake, heartbeat, reconnect), `ServerDiscovery` (`NsdManager`), `SavedServerStore` (DataStore), and `ConnectionRepository` (link lifecycle). Protocol types stay below the feature boundary. |
 | `:feature:connection` | `ConnectionViewModel`, immutable `ConnectionUiState`, the Compose screen, manual-entry sheet, previews, and UI tests. No sockets or protocol imports. |
 | `:app` | Injects the app-scoped `ConnectionRepository`, starts the graph at `CONNECTION_ROUTE`, and makes Drive the visible destination after a successful connect. |
 
@@ -26,7 +26,7 @@ Link:       Disconnected → Connecting → Connected
                               └────────→ Reconnecting(attempt) → Connected
 ```
 `DccConnectionState` in `:core:data` is this machine. `DefaultConnectionRepository` maps it onto the
-user-facing `ConnectionState` without losing the target's name or demo mode.
+user-facing `ConnectionState` without losing the target's name.
 
 `ConnectionUiState` is immutable and contains:
 
@@ -86,8 +86,7 @@ contain separators or newlines without corrupting the store. Records are validat
 `SavedServer`/`ServerEndpoint`: id and name are non-blank, the host is a plain address (no scheme,
 path, whitespace, or embedded port), and the port is 1–65535. The default port is **12090**. Damaged records are
 skipped. A successful live connection updates `lastConnectedEpochMillis` and creates the record if
-the endpoint was discovered rather than saved. Demo sessions are never saved. WiThrottle has no
-credentials, so none are stored.
+the endpoint was discovered rather than saved. WiThrottle has no credentials, so none are stored.
 
 ## Live session
 
@@ -123,31 +122,19 @@ All transport failures map to `ConnectionError` (`TimedOut`, `ServerClosed`, `Un
 `ConnectionRefused`, `HostNotFound`, `LocalNetworkPermissionDenied`, `UnsupportedVersion`,
 `ProtocolMismatch`, `NotWiThrottle`, `Unknown`). Exception messages are never copied into UI copy.
 
-## Demo mode
-
-`DemoTransport` is an in-process, scripted DCC server that implements the same `DccClient` port. It
-waits 450 ms to make the connecting state visible, emits the `VN2.0` greeting and a small roster,
-and then answers real protocol commands: acquire, speed, direction, functions, queries, release,
-and track power. `simulateDisconnect()` moves the link to `Reconnecting` and back to `Connected`
-after one second, so reconnect and stale-state behaviour can be exercised without hardware. The
-connection screen and Drive both show a persistent **Demo mode** banner while it is active. No
-socket, mDNS, or permission is used.
-
 ## Tests and previews
 
-- Unit tests: saved-server codec and validation, reconnect policy, demo transport (greeting,
-  acquire, speed, functions, drop/reconnect, close), connection repository state mapping, connection
-  ViewModel (scan, permission, connect, failure, retry, manual validation, default port, demo,
-  saved-row projection), and manual validation.
+- Unit tests: saved-server codec and validation, reconnect policy, connection repository state
+  mapping, connection ViewModel (scan, permission, connect, failure, retry, manual validation,
+  default port, saved-row projection), and manual validation.
 - Fake-TCP-server tests: dropped connection mid-frame (no partial event), heartbeat timeout,
   reconnect, concurrent close, invalid handshake, old protocol version, cancellation, and an
   acquire round trip.
-- Compose UI tests: scanning, empty, permission denied, connecting, failed, connected, and demo
-  entry.
-- `@CabPreview` variants cover scanning, empty, permission denied, connecting, failed, connected,
-  and demo-connected states across the six device configurations.
+- Compose UI tests: scanning, empty, permission denied, connecting, failed, and connected.
+- `@CabPreview` variants cover scanning, empty, permission denied, connecting, failed, and connected
+  states across the six device configurations.
 - `:app` navigation test: Connect is the start destination, navigation is hidden on the gate, and
-  demo mode is the route into Drive.
+  manual entry opens from the gate.
 
 ## Known limits
 

@@ -40,6 +40,9 @@ enum class PrimaryActionSize(
 /**
  * The one primary action on a screen. Sizes map directly to the touch tokens; [Hero] is the
  * Stop target and is never made smaller by a layout.
+ *
+ * [Regular] is the default so every ordinary screen action shares the same 56 dp height.
+ * [Large] is reserved for a single emphasised action, and [Hero] belongs to Stop alone.
  */
 @Composable
 fun PrimaryActionButton(
@@ -49,7 +52,7 @@ fun PrimaryActionButton(
     enabled: Boolean = true,
     loading: Boolean = false,
     icon: ImageVector? = null,
-    size: PrimaryActionSize = PrimaryActionSize.Large,
+    size: PrimaryActionSize = PrimaryActionSize.Regular,
 ) {
     val loadingLabel = stringResource(R.string.cab_loading)
     Button(

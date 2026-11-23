@@ -142,8 +142,6 @@ private fun handleLink(
         ConnectionAction.Retry -> viewModel.onRetry()
         ConnectionAction.DismissFailure -> viewModel.onDismissFailure()
         ConnectionAction.Disconnect -> viewModel.onDisconnect()
-        ConnectionAction.StartDemo -> viewModel.onStartDemo()
-        ConnectionAction.EndDemo -> viewModel.onEndDemo()
     }
 }
 

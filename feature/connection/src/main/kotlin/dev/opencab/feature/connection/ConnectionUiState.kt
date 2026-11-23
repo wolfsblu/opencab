@@ -1,7 +1,6 @@
 package dev.opencab.feature.connection
 
 import dev.opencab.core.model.ConnectionError
-import dev.opencab.core.model.ConnectionMode
 import dev.opencab.core.model.ConnectionTarget
 import dev.opencab.core.model.ServerEndpoint
 
@@ -101,10 +100,7 @@ data class ConnectionUiState(
     val failure: FailureUiState? = null,
     val manualEntry: ManualEntryUiState? = null,
     val discoveryError: ConnectionError? = null,
-) {
-    val isDemoSession: Boolean
-        get() = link?.target?.mode == ConnectionMode.DEMO && link.phase == LinkPhase.Connected
-}
+)
 
 /** One-shot effects that must not be replayed by recomposition. */
 sealed interface ConnectionEvent {

@@ -124,18 +124,4 @@ class ConnectionScreenTest {
         composeRule.onNodeWithText("Disconnect").assertIsDisplayed()
         composeRule.onNodeWithText("Connected to Junction Yard").assertIsDisplayed()
     }
-
-    @Test
-    fun demoEntryIsAvailableAndClearlyLabelled() {
-        setContent(
-            ConnectionUiState(
-                permission = PermissionUiState.Needed,
-                scanPhase = ScanPhase.Complete,
-            ),
-        )
-
-        composeRule.onNodeWithTag(ConnectionTestTags.MANUAL_ENTRY).performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithTag(ConnectionTestTags.START_DEMO).performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Demo mode").assertIsDisplayed()
-    }
 }

@@ -19,7 +19,6 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,6 +30,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import dev.opencab.core.designsystem.component.SecondaryActionButton
 import dev.opencab.core.designsystem.preview.CabPreview
 import dev.opencab.core.designsystem.preview.CabPreviewSurface
 import dev.opencab.core.designsystem.theme.CabElevationLevel
@@ -176,18 +176,17 @@ internal fun ManualEntrySheetContent(
             horizontalArrangement = Arrangement.spacedBy(CabTheme.spacing.sm, Alignment.End),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            TextButton(
+            SecondaryActionButton(
+                text = stringResource(R.string.connection_manual_cancel),
                 onClick = onDismiss,
-                modifier = Modifier.heightIn(min = CabTheme.sizing.touchMin),
-            ) {
-                Text(stringResource(R.string.connection_manual_cancel))
-            }
+            )
             Button(
                 onClick = onSubmit,
                 modifier =
                 Modifier
                     .heightIn(min = CabTheme.sizing.touchMin)
                     .testTag(ConnectionTestTags.MANUAL_SUBMIT),
+                shape = CabTheme.shapes.pill,
             ) {
                 Text(
                     stringResource(

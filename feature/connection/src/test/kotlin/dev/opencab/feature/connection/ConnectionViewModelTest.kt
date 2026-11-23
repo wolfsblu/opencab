@@ -2,7 +2,6 @@ package dev.opencab.feature.connection
 
 import dev.opencab.core.data.connection.DiscoverySnapshot
 import dev.opencab.core.model.ConnectionError
-import dev.opencab.core.model.ConnectionMode
 import dev.opencab.core.model.ConnectionState
 import dev.opencab.core.model.ConnectionTarget
 import dev.opencab.core.model.DiscoveredServer
@@ -164,19 +163,6 @@ class ConnectionViewModelTest {
         assertEquals(ServerEndpoint.DEFAULT_PORT, saved.endpoint.port)
         assertEquals(ConnectionTarget("Test bench", saved.endpoint), repository.connectedTargets.single())
         assertNull(viewModel.uiState.value.manualEntry)
-    }
-
-    @Test
-    fun demoStartsADemoTargetAndNeverSavesIt() = runTest {
-        val repository = FakeConnectionRepository()
-        val store = FakeSavedServerStore()
-        val viewModel = viewModel(repository = repository, store = store)
-
-        viewModel.onStartDemo()
-        advanceUntilIdle()
-
-        assertEquals(ConnectionMode.DEMO, repository.connectedTargets.single().mode)
-        assertTrue(store.upserts.isEmpty())
     }
 
     @Test

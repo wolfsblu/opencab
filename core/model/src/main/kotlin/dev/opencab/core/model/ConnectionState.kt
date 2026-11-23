@@ -65,12 +65,6 @@ data class SavedServer(
     }
 }
 
-/** Whether a session is talking to a real layout or the built-in demo transport. */
-enum class ConnectionMode {
-    LIVE,
-    DEMO,
-}
-
 /**
  * Everything needed to open a session, independent of where the endpoint came from.
  *
@@ -79,20 +73,9 @@ enum class ConnectionMode {
 data class ConnectionTarget(
     val name: String,
     val endpoint: ServerEndpoint,
-    val mode: ConnectionMode = ConnectionMode.LIVE,
 ) {
     init {
         require(name.isNotBlank()) { "Connection name must not be blank" }
-    }
-
-    companion object {
-        const val DEMO_NAME: String = "Demo layout"
-
-        fun demo(): ConnectionTarget = ConnectionTarget(
-            name = DEMO_NAME,
-            endpoint = ServerEndpoint(host = "demo", port = ServerEndpoint.DEFAULT_PORT),
-            mode = ConnectionMode.DEMO,
-        )
     }
 }
 
