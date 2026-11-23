@@ -39,7 +39,6 @@ internal sealed interface ConnectionAction {
 object ConnectionTestTags {
     const val SCREEN: String = "screen_connection"
     const val SCANNING: String = "connection_scanning"
-    const val EMPTY: String = "connection_empty"
     const val PERMISSION: String = "connection_permission"
     const val PERMISSION_DENIED: String = "connection_permission_denied"
     const val PERMISSION_ALLOW: String = "connection_permission_allow"

@@ -418,7 +418,7 @@ private fun NearbySection(
                     )
 
                 uiState.scanPhase == ScanPhase.Complete ->
-                    EmptyNearby(onAction = onAction)
+                    EmptyNearby()
 
                 else -> ScanningRow(
                     title = stringResource(R.string.connection_nearby_scanning_title),
@@ -511,18 +511,10 @@ private fun ScanningRow(
 }
 
 @Composable
-private fun EmptyNearby(onAction: (ConnectionAction) -> Unit) {
+private fun EmptyNearby() {
     EmptyState(
         title = stringResource(R.string.connection_empty_title),
         message = stringResource(R.string.connection_empty_body),
-        action = {
-            PrimaryActionButton(
-                text = stringResource(R.string.connection_manual_open),
-                onClick = { onAction(ConnectionAction.OpenManualEntry) },
-                size = PrimaryActionSize.Regular,
-                modifier = Modifier.testTag(ConnectionTestTags.EMPTY),
-            )
-        },
     )
 }
 

@@ -50,7 +50,7 @@ class ConnectionScreenTest {
     }
 
     @Test
-    fun emptyStateOffersManualEntry() {
+    fun emptyStateKeepsManualEntryAvailable() {
         setContent(
             ConnectionUiState(
                 permission = PermissionUiState.Granted,
@@ -59,7 +59,9 @@ class ConnectionScreenTest {
         )
 
         composeRule.onNodeWithText("No layouts found nearby").assertIsDisplayed()
-        composeRule.onNodeWithTag(ConnectionTestTags.EMPTY).assertIsDisplayed()
+        composeRule.onNodeWithTag(ConnectionTestTags.MANUAL_ENTRY)
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test
